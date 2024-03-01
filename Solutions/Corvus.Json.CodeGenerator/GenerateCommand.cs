@@ -67,10 +67,22 @@ internal class GenerateCommand : AsyncCommand<GenerateCommand.Settings>
 
     private static async Task<int> GenerateTypes(string schemaFile, string rootNamespace, string? rootPath, bool rebaseToRootPath, string? outputPath, string? outputMapFile, string? rootTypeName, SchemaVariant schemaVariant)
     {
+        Console.WriteLine($"[GenerateTypes]");
+        Console.WriteLine($"\t schemaFile = {schemaFile}");
+        Console.WriteLine($"\t rootNamespace = {rootNamespace}");
+        Console.WriteLine($"\t rootPath = {rootPath}");
+        Console.WriteLine($"\t rebaseToRootPath = {rebaseToRootPath}");
+        Console.WriteLine($"\t schemaVariant = {schemaVariant}");
+        // Console.WriteLine($"\t  = {}");
+
+
         try
         {
             var typeBuilder = new JsonSchemaTypeBuilder(new CompoundDocumentResolver(new FileSystemDocumentResolver(), new HttpClientDocumentResolver(new HttpClient())));
             JsonReference reference = new(schemaFile, rootPath ?? string.Empty);
+        Console.WriteLine($"\t reference.Uri = {reference.Uri}");
+        Console.WriteLine($"\t reference.Fragment = {reference.Fragment}");
+
             SchemaVariant sv = ValidationSemanticsToSchemaVariant(await typeBuilder.GetValidationSemantics(reference, rebaseToRootPath).ConfigureAwait(false));
 
             if (sv == SchemaVariant.NotSpecified)
@@ -89,6 +101,7 @@ internal class GenerateCommand : AsyncCommand<GenerateCommand.Settings>
                 };
 
             (string RootType, ImmutableDictionary<JsonReference, TypeAndCode> GeneratedTypes) = await builder.BuildTypesFor(reference, rootNamespace ?? string.Empty, rebaseToRootPath, rootTypeName: rootTypeName).ConfigureAwait(false);
+        Console.WriteLine($"\t RootType = {RootType}"); 
 
             if (!string.IsNullOrEmpty(outputPath))
             {
@@ -153,6 +166,7 @@ internal class GenerateCommand : AsyncCommand<GenerateCommand.Settings>
         }
         catch (Exception ex)
         {
+            Console.Write("[GenerateTypes] ");
             Console.Error.WriteLine(ex.Message);
             return -1;
         }

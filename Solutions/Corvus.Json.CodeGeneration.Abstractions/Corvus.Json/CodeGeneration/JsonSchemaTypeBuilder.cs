@@ -75,6 +75,8 @@ public partial class JsonSchemaTypeBuilder
         // Next, we walk the tree finding and building properties from the properties themselves, and any conditionally applied subschema.
         this.FindAndBuildPropertiesCore(rootTypeDeclaration);
 
+if (rootTypeDeclaration == null) { throw new ApplicationException("rootTypeDeclaration is null"); } 
+else { Console.WriteLine($" rootTypeDeclaration = {rootTypeDeclaration}"); }
         return rootTypeDeclaration;
     }
 

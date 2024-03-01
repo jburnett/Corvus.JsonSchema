@@ -41,8 +41,9 @@ public abstract class JsonSchemaBuilderBase : IJsonSchemaBuilder
     /// <inheritdoc/>
     public async Task<(string RootTypeName, ImmutableDictionary<JsonReference, TypeAndCode> GeneratedTypes)> BuildTypesFor(JsonReference reference, string rootNamespace, bool rebase = false, ImmutableDictionary<string, string>? baseUriToNamespaceMap = null, string? rootTypeName = null)
     {
-        TypeDeclaration rootTypeDeclaration = await this.typeBuilder.AddTypeDeclarationsFor(reference, rootNamespace, rebase, baseUriToNamespaceMap, rootTypeName) ?? throw new InvalidOperationException($"Unable to find the root type declaration at {reference}");
+        TypeDeclaration? rootTypeDeclaration = await this.typeBuilder.AddTypeDeclarationsFor(reference, rootNamespace, rebase, baseUriToNamespaceMap, rootTypeName) ?? throw new InvalidOperationException($"o fudge! Unable to find the root type declaration at {reference}");
         rootTypeName = rootTypeDeclaration.FullyQualifiedDotnetTypeName!;
+    Console.WriteLine($"[BuildTypesFor] rootTypeName = {rootTypeName}"); 
         ImmutableArray<TypeDeclaration> typesToGenerate = rootTypeDeclaration.GetTypesToGenerate();
 
         return (
