@@ -58,7 +58,7 @@ internal class JsonSchemaRegistry
         {
     Console.WriteLine($"[RegisterDocumentSchema] jsonSchemaPath.Uri = {jsonSchemaPath.Uri}");
     Console.WriteLine($"[RegisterDocumentSchema] DefaultAbsoluteLocation.Uri = {DefaultAbsoluteLocation.Uri}");
-            basePath = new JsonReference(jsonSchemaPath.Uri[DefaultAbsoluteLocation.Uri.Length..], ReadOnlySpan<char>.Empty);
+            basePath = new JsonReference(jsonSchemaPath.Uri[(DefaultAbsoluteLocation.Uri.Length-1)..], ReadOnlySpan<char>.Empty);
         }
     Console.WriteLine($"[RegisterDocumentSchema] before TryResolve, basePath = {basePath}; documentResolver = {documentResolver.GetType()}");
 
