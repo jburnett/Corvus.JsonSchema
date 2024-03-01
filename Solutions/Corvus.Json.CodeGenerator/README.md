@@ -1,0 +1,1 @@
+dotnet run --no-build -- --rootNamespace ns --rootPath '#/$defs/Person' --outputPath types schemas/person-from-api.json
