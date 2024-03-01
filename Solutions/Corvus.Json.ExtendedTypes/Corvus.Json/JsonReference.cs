@@ -57,6 +57,8 @@ public readonly struct JsonReference : IEquatable<JsonReference>
     /// <param name="pointer">The pointer component of the reference.</param>
     public JsonReference(ReadOnlySpan<char> uri, ReadOnlySpan<char> pointer)
     {
+Console.WriteLine($"[JsonReference ctor] Uri = {uri}; pointer.Length = {pointer.Length}");
+
         int extra = pointer.Length == 0 || pointer[0] == '#' ? 0 : 1;
         Memory<char> result = new char[uri.Length + pointer.Length + extra];
         uri.CopyTo(result.Span);
@@ -66,6 +68,7 @@ public readonly struct JsonReference : IEquatable<JsonReference>
             pointer.CopyTo(result.Span[(uri.Length + extra)..]);
         }
 
+Console.WriteLine($"[JsonReference ctor] this.reference = {result}");
         this.reference = result;
     }
 

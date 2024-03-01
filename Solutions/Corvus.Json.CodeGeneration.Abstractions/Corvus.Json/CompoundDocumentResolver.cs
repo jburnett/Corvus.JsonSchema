@@ -40,23 +40,29 @@ public class CompoundDocumentResolver : IDocumentResolver
 
         if (this.documents.TryGetValue(uri, out JsonDocument? result))
         {
+    Console.WriteLine("[TryResolve] TryGetValue succeeded; now TryResolvePointer...");
             if (JsonPointerUtilities.TryResolvePointer(result, reference.Fragment, out JsonElement? element))
             {
+    Console.WriteLine($"[TryResolve] TryResolvePointer yielded {element}");
                 return element;
             }
 
             return default;
         }
 
+    Console.WriteLine("[TryResolve] TryGetValue failed; looping through documentResolvers");
         foreach (IDocumentResolver resolver in this.documentResolvers)
         {
+    Console.WriteLine($"[TryResolve] TryResolve with resolver = {resolver.GetType()}");
             JsonElement? element = await resolver.TryResolve(reference).ConfigureAwait(false);
             if (element is JsonElement je)
             {
+    Console.WriteLine($"[TryResolve] resolver yielding JsonElement = {je}");
                 return je;
             }
         }
 
+    Console.WriteLine($"[TryResolve] TryResolve failed for all resolvers");
         return default;
     }
 

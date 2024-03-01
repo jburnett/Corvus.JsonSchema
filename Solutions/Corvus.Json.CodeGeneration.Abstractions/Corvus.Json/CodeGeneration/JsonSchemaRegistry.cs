@@ -43,22 +43,24 @@ internal class JsonSchemaRegistry
     /// <remarks><paramref name="jsonSchemaPath"/> must point to a root scope. If it has a pointer into the document, then <paramref name="rebaseAsRoot"/> must be true.</remarks>
     public async Task<JsonReference> RegisterDocumentSchema(JsonReference jsonSchemaPath, bool rebaseAsRoot = false)
     {
-            Console.WriteLine($"[RegisterDocumentSchema ENTER] jsonSchemaPath = {jsonSchemaPath}"); 
-            Console.WriteLine($"[RegisterDocumentSchema] rebaseAsRoot = {rebaseAsRoot}");
+    Console.WriteLine($"[RegisterDocumentSchema ENTER] jsonSchemaPath = {jsonSchemaPath}"); 
+    Console.WriteLine($"[RegisterDocumentSchema] rebaseAsRoot = {rebaseAsRoot}");
         if (SchemaReferenceNormalization.TryNormalizeSchemaReference(jsonSchemaPath, out string? result))
         {
             jsonSchemaPath = new(result);
         }
-            Console.WriteLine($"[RegisterDocumentSchema] normalized jsonSchemaPath = {jsonSchemaPath}");
+    Console.WriteLine($"[RegisterDocumentSchema] normalized jsonSchemaPath = {jsonSchemaPath}");
 
         JsonReference basePath = jsonSchemaPath.WithFragment(string.Empty);
-            Console.WriteLine($"[RegisterDocumentSchema] basePath = {basePath}");
+    Console.WriteLine($"[RegisterDocumentSchema] basePath = {basePath}");
 
         if (basePath.Uri.StartsWith(DefaultAbsoluteLocation.Uri))
         {
+    Console.WriteLine($"[RegisterDocumentSchema] jsonSchemaPath.Uri = {jsonSchemaPath.Uri}");
+    Console.WriteLine($"[RegisterDocumentSchema] DefaultAbsoluteLocation.Uri = {DefaultAbsoluteLocation.Uri}");
             basePath = new JsonReference(jsonSchemaPath.Uri[DefaultAbsoluteLocation.Uri.Length..], ReadOnlySpan<char>.Empty);
         }
-            Console.WriteLine($"[RegisterDocumentSchema] before TryResolve, basePath = {basePath}");
+    Console.WriteLine($"[RegisterDocumentSchema] before TryResolve, basePath = {basePath}; documentResolver = {documentResolver.GetType()}");
 
         JsonElement? optionalDocumentRoot = await this.documentResolver.TryResolve(basePath).ConfigureAwait(false);
         if (optionalDocumentRoot == null) {
