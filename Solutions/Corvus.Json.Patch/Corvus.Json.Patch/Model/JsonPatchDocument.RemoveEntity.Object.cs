@@ -17,8 +17,13 @@ namespace Corvus.Json.Patch.Model;
 public readonly partial struct JsonPatchDocument
 {
     /// <summary>
-    /// A type generated from a JsonSchema specification.
+    /// Generated from JSON Schema.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Remove operation. Only a path is specified.
+    /// </para>
+    /// </remarks>
     public readonly partial struct RemoveEntity : IJsonObject<RemoveEntity>
     {
         /// <summary>
@@ -293,7 +298,11 @@ public readonly partial struct JsonPatchDocument
             {
                 if (name.TryGetProperty(this.jsonElementBacking, out JsonElement result))
                 {
-                    value = TValue.FromJson(result);
+#if NET8_0_OR_GREATER
+                value = TValue.FromJson(result);
+#else
+                    value = JsonValueNetStandard20Extensions.FromJsonElement<TValue>(result);
+#endif
                     return true;
                 }
 
@@ -305,7 +314,11 @@ public readonly partial struct JsonPatchDocument
             {
                 if (this.objectBacking.TryGetValue(name, out JsonAny result))
                 {
-                    value = TValue.FromAny(result);
+#if NET8_0_OR_GREATER
+                value = TValue.FromAny(result);
+#else
+                    value = result.As<TValue>();
+#endif
                     return true;
                 }
 
@@ -324,7 +337,11 @@ public readonly partial struct JsonPatchDocument
             {
                 if (this.jsonElementBacking.TryGetProperty(name, out JsonElement result))
                 {
-                    value = TValue.FromJson(result);
+#if NET8_0_OR_GREATER
+                value = TValue.FromJson(result);
+#else
+                    value = JsonValueNetStandard20Extensions.FromJsonElement<TValue>(result);
+#endif
                     return true;
                 }
 
@@ -336,7 +353,11 @@ public readonly partial struct JsonPatchDocument
             {
                 if (this.objectBacking.TryGetValue(name, out JsonAny result))
                 {
-                    value = TValue.FromAny(result);
+#if NET8_0_OR_GREATER
+                value = TValue.FromAny(result);
+#else
+                    value = result.As<TValue>();
+#endif
                     return true;
                 }
 
@@ -355,7 +376,11 @@ public readonly partial struct JsonPatchDocument
             {
                 if (this.jsonElementBacking.TryGetProperty(name, out JsonElement result))
                 {
-                    value = TValue.FromJson(result);
+#if NET8_0_OR_GREATER
+                value = TValue.FromJson(result);
+#else
+                    value = JsonValueNetStandard20Extensions.FromJsonElement<TValue>(result);
+#endif
                     return true;
                 }
 
@@ -367,7 +392,11 @@ public readonly partial struct JsonPatchDocument
             {
                 if (this.objectBacking.TryGetValue(name, out JsonAny result))
                 {
-                    value = TValue.FromAny(result);
+#if NET8_0_OR_GREATER
+                value = TValue.FromAny(result);
+#else
+                    value = result.As<TValue>();
+#endif
                     return true;
                 }
 
@@ -386,7 +415,11 @@ public readonly partial struct JsonPatchDocument
             {
                 if (this.jsonElementBacking.TryGetProperty(utf8Name, out JsonElement result))
                 {
-                    value = TValue.FromJson(result);
+#if NET8_0_OR_GREATER
+                value = TValue.FromJson(result);
+#else
+                    value = JsonValueNetStandard20Extensions.FromJsonElement<TValue>(result);
+#endif
                     return true;
                 }
 
@@ -398,7 +431,11 @@ public readonly partial struct JsonPatchDocument
             {
                 if (this.objectBacking.TryGetValue(utf8Name, out JsonAny result))
                 {
-                    value = TValue.FromAny(result);
+#if NET8_0_OR_GREATER
+                value = TValue.FromAny(result);
+#else
+                    value = result.As<TValue>();
+#endif
                     return true;
                 }
 

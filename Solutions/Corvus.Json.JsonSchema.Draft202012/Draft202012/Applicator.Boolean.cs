@@ -16,7 +16,7 @@ using Corvus.Json.Internal;
 
 namespace Corvus.Json.JsonSchema.Draft202012;
 /// <summary>
-/// A type generated from a JsonSchema specification.
+/// Applicator vocabulary meta-schema
 /// </summary>
 public readonly partial struct Applicator : IJsonBoolean<Applicator>
 {
@@ -60,7 +60,7 @@ public readonly partial struct Applicator : IJsonBoolean<Applicator>
     /// </summary>
     /// <param name = "value">The value from which to convert.</param>
     /// <exception cref = "InvalidOperationException">The value was not a string.</exception>
-    public static explicit operator bool (Applicator value)
+    public static implicit operator bool (Applicator value)
     {
         return value.GetBoolean() ?? throw new InvalidOperationException();
     }

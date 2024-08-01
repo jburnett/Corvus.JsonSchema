@@ -12,7 +12,7 @@ using Corvus.Json;
 
 namespace Corvus.Json.Patch.SpecGenerator;
 /// <summary>
-/// A type generated from a JsonSchema specification.
+/// Generated from JSON Schema.
 /// </summary>
 public readonly partial struct DisabledScenario
 {
@@ -28,7 +28,7 @@ public readonly partial struct DisabledScenario
         if (level > ValidationLevel.Basic)
         {
             result = result.UsingStack();
-            result = result.PushSchemaLocation("D:/source/corvus-dotnet/Corvus.JsonSchema/Solutions/Corvus.Json.Patch.SpecGenerator/Model/json-patch-test.json#/$defs/DisabledScenario");
+            result = result.PushSchemaLocation("json-patch-test.json#/$defs/DisabledScenario");
         }
 
         JsonValueKind valueKind = this.ValueKind;

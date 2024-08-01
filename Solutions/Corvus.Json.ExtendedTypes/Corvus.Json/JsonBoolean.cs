@@ -2,8 +2,8 @@
 // Copyright (c) Endjin Limited. All rights reserved.
 // </copyright>
 
+using System;
 using System.Buffers;
-using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Corvus.Json.Internal;
@@ -257,6 +257,7 @@ public readonly partial struct JsonBoolean : IJsonBoolean<JsonBoolean>
         return new(value);
     }
 
+#if NET8_0_OR_GREATER
     /// <summary>
     /// Gets an instance of the JSON value from a string value.
     /// </summary>
@@ -274,6 +275,7 @@ public readonly partial struct JsonBoolean : IJsonBoolean<JsonBoolean>
 
         return Undefined;
     }
+#endif
 
     /// <summary>
     /// Gets an instance of the JSON value from a boolean value.
@@ -304,6 +306,7 @@ public readonly partial struct JsonBoolean : IJsonBoolean<JsonBoolean>
         return Undefined;
     }
 
+#if NET8_0_OR_GREATER
     /// <summary>
     /// Gets an instance of the JSON value from a double value.
     /// </summary>
@@ -357,6 +360,7 @@ public readonly partial struct JsonBoolean : IJsonBoolean<JsonBoolean>
 
         return Undefined;
     }
+#endif
 
     /// <summary>
     /// Parses a JSON string into a JsonBoolean.
@@ -423,9 +427,27 @@ public readonly partial struct JsonBoolean : IJsonBoolean<JsonBoolean>
     /// </summary>
     /// <param name="buffer">The buffer from which to parse the value.</param>
     /// <returns>The parsed value.</returns>
+    public static JsonBoolean ParseValue(string buffer)
+    {
+#if NET8_0_OR_GREATER
+        return IJsonValue<JsonBoolean>.ParseValue(buffer);
+#else
+        return JsonValueHelpers.ParseValue<JsonBoolean>(buffer.AsSpan());
+#endif
+    }
+
+    /// <summary>
+    /// Parses a JSON value from a buffer.
+    /// </summary>
+    /// <param name="buffer">The buffer from which to parse the value.</param>
+    /// <returns>The parsed value.</returns>
     public static JsonBoolean ParseValue(ReadOnlySpan<char> buffer)
     {
+#if NET8_0_OR_GREATER
         return IJsonValue<JsonBoolean>.ParseValue(buffer);
+#else
+        return JsonValueHelpers.ParseValue<JsonBoolean>(buffer);
+#endif
     }
 
     /// <summary>
@@ -435,7 +457,11 @@ public readonly partial struct JsonBoolean : IJsonBoolean<JsonBoolean>
     /// <returns>The parsed value.</returns>
     public static JsonBoolean ParseValue(ReadOnlySpan<byte> buffer)
     {
+#if NET8_0_OR_GREATER
         return IJsonValue<JsonBoolean>.ParseValue(buffer);
+#else
+        return JsonValueHelpers.ParseValue<JsonBoolean>(buffer);
+#endif
     }
 
     /// <summary>
@@ -445,7 +471,11 @@ public readonly partial struct JsonBoolean : IJsonBoolean<JsonBoolean>
     /// <returns>The parsed value.</returns>
     public static JsonBoolean ParseValue(ref Utf8JsonReader reader)
     {
+#if NET8_0_OR_GREATER
         return IJsonValue<JsonBoolean>.ParseValue(ref reader);
+#else
+        return JsonValueHelpers.ParseValue<JsonBoolean>(ref reader);
+#endif
     }
 
     /// <summary>
@@ -457,6 +487,7 @@ public readonly partial struct JsonBoolean : IJsonBoolean<JsonBoolean>
     public TTarget As<TTarget>()
         where TTarget : struct, IJsonValue<TTarget>
     {
+#if NET8_0_OR_GREATER
         if ((this.backing & Backing.JsonElement) != 0)
         {
             return TTarget.FromJson(this.jsonElementBacking);
@@ -473,6 +504,9 @@ public readonly partial struct JsonBoolean : IJsonBoolean<JsonBoolean>
         }
 
         return TTarget.Undefined;
+#else
+        return this.As<JsonBoolean, TTarget>();
+#endif
     }
 
     /// <inheritdoc/>

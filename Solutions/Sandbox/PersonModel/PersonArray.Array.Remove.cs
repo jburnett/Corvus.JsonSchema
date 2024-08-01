@@ -12,15 +12,26 @@ using Corvus.Json;
 
 namespace Corvus.Json.Benchmarking.Models;
 /// <summary>
-/// A type generated from a JsonSchema specification.
+/// Generated from JSON Schema.
 /// </summary>
 public readonly partial struct PersonArray
 {
     /// <inheritdoc/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PersonArray Remove(in JsonAny item1)
+    PersonArray IJsonArray<PersonArray>.Remove(in JsonAny item1)
     {
         return new(this.GetImmutableListWithout(item1));
+    }
+
+    /// <summary>
+    /// Remove the specified item from the array.
+    /// </summary>
+    /// <param name = "item">The item to remove.</param>
+    /// <returns>An instance of the array with the item removed.</returns>
+    /// <exception cref = "InvalidOperationException">The value was not an array.</exception>
+    public PersonArray Remove(in Corvus.Json.Benchmarking.Models.Person item)
+    {
+        return new(this.GetImmutableListWithout(item.AsAny));
     }
 
     /// <inheritdoc/>

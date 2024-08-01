@@ -18,9 +18,7 @@ using Corvus.Json;
 namespace <#= Namespace #>;
 
 <# BeginNesting(); #>
-/// <summary>
-/// A type generated from a JsonSchema specification.
-/// </summary>
+<#= FormattedTypeDocumentation #>
 public readonly partial struct <#= TypeDeclaration.DotnetTypeName #>
 {
 <#  if (HasMultipleOf)
@@ -64,7 +62,7 @@ public readonly partial struct <#= TypeDeclaration.DotnetTypeName #>
         if (level > ValidationLevel.Basic)
         {
             result = result.UsingStack();
-            result = result.PushSchemaLocation("<#= TypeDeclaration.LocatedSchema.Location #>");
+            result = result.PushSchemaLocation(<#= Formatting.FormatLiteralOrNull(TypeDeclaration.RelativeSchemaLocation, true) #>);
         }
 <#  if (HasAdditionalProperties || HasUnevaluatedProperties)
     { #>
@@ -80,6 +78,15 @@ public readonly partial struct <#= TypeDeclaration.DotnetTypeName #>
     { #>
 
         result = this.ValidateRef(result, level);
+        if (level == ValidationLevel.Flag && !result.IsValid)
+        {
+            return result;
+        }
+<#  }
+    if (HasRecursiveRef)
+    { #>
+
+        result = this.ValidateRecursiveRef(result, level);
         if (level == ValidationLevel.Flag && !result.IsValid)
         {
             return result;
@@ -101,7 +108,7 @@ public readonly partial struct <#= TypeDeclaration.DotnetTypeName #>
             return result;
         }
 <#      }
-        if (HasFormat)
+        if (HasFormat && ValidateFormat)
         { #>
 
         result = this.ValidateFormat(valueKind, result, level);

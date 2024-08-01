@@ -16,7 +16,7 @@ using Corvus.Json.Internal;
 
 namespace Corvus.Json.JsonSchema.Draft201909;
 /// <summary>
-/// A type generated from a JsonSchema specification.
+/// Meta-data vocabulary meta-schema
 /// </summary>
 public readonly partial struct MetaData : IJsonBoolean<MetaData>
 {
@@ -60,7 +60,7 @@ public readonly partial struct MetaData : IJsonBoolean<MetaData>
     /// </summary>
     /// <param name = "value">The value from which to convert.</param>
     /// <exception cref = "InvalidOperationException">The value was not a string.</exception>
-    public static explicit operator bool (MetaData value)
+    public static implicit operator bool (MetaData value)
     {
         return value.GetBoolean() ?? throw new InvalidOperationException();
     }

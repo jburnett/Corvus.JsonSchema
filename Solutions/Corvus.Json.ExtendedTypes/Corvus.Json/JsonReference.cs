@@ -2,9 +2,11 @@
 // Copyright (c) Endjin Limited. All rights reserved.
 // </copyright>
 
+using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace Corvus.Json;
 
@@ -12,12 +14,24 @@ namespace Corvus.Json;
 /// A JSON $ref as a URI or JsonPointer.
 /// </summary>
 [DebuggerDisplay("{reference}")]
-public readonly struct JsonReference : IEquatable<JsonReference>
+public readonly struct JsonReference
+#if NET8_0_OR_GREATER
+    : IEquatable<JsonReference>,
+    ISpanFormattable
+#else
+    : IEquatable<JsonReference>
+#endif
 {
     /// <summary>
     /// Gets a reference to the root fragment.
     /// </summary>
     public static readonly JsonReference RootFragment = new("#");
+
+#if NET8_0_OR_GREATER
+    private static readonly SearchValues<char> SegmentSeparatorChars = SearchValues.Create(@":\/?#");
+#else
+    private static readonly ReadOnlyMemory<char> SegmentSeparatorChars = @":\/?#".AsMemory();
+#endif
 
     private readonly ReadOnlyMemory<char> reference;
 
@@ -104,6 +118,26 @@ public readonly struct JsonReference : IEquatable<JsonReference>
     public ReadOnlySpan<char> Fragment => this.FindFragment();
 
     /// <summary>
+    /// Gets a value indicating whether this is an implicit file reference.
+    /// </summary>
+    public bool IsImplicitFile
+    {
+        get
+        {
+            return
+                this.HasUri &&
+                this.Uri.Length > 2 &&
+#if NET8_0_OR_GREATER
+                char.IsAsciiLetter(this.Uri[0]) &&
+#else
+                ((uint)((this.Uri[0] | 0x20) - 'a') <= 'z' - 'a') &&
+#endif
+                this.Uri[1] is ':' &&
+                this.Uri[2] is '/' or '\\';
+        }
+    }
+
+    /// <summary>
     /// Implicit conversion from a string.
     /// </summary>
     /// <param name="reference">The reference as a string.</param>
@@ -166,7 +200,11 @@ public readonly struct JsonReference : IEquatable<JsonReference>
         if (referenceOrNull is string reference)
         {
             Span<char> decodedReference = stackalloc char[reference.Length];
+#if NET8_0_OR_GREATER
             int writtenBytes = JsonPointerUtilities.DecodeHexPointer(reference, decodedReference);
+#else
+            int writtenBytes = JsonPointerUtilities.DecodeHexPointer(reference.AsSpan(), decodedReference);
+#endif
             var output = new Memory<char>(new char[writtenBytes]);
             decodedReference[..writtenBytes].CopyTo(output.Span);
             return new JsonReference(output);
@@ -184,7 +222,7 @@ public readonly struct JsonReference : IEquatable<JsonReference>
         Span<char> decodedReference = stackalloc char[this.reference.Length];
         int writtenBytes = JsonPointerUtilities.DecodePointer(this.reference.Span, decodedReference);
         writtenBytes = JsonPointerUtilities.DecodeHexPointer(decodedReference[..writtenBytes], decodedReference);
-        return new string(decodedReference[..writtenBytes]);
+        return decodedReference[..writtenBytes].ToString();
     }
 
     /// <summary>
@@ -194,7 +232,11 @@ public readonly struct JsonReference : IEquatable<JsonReference>
     /// <returns>A JSON reference with the same uri up to and including path and query, but with a different fragment.</returns>
     public JsonReference WithFragment(string fragment)
     {
+#if NET8_0_OR_GREATER
         return new JsonReference(this.Uri, fragment);
+#else
+        return new JsonReference(this.Uri, fragment.AsSpan());
+#endif
     }
 
     /// <summary>
@@ -270,7 +312,7 @@ public readonly struct JsonReference : IEquatable<JsonReference>
             }
             else
             {
-                authority = ReadOnlySpan<char>.Empty;
+                authority = [];
             }
         }
 
@@ -328,7 +370,7 @@ public readonly struct JsonReference : IEquatable<JsonReference>
             }
             else
             {
-                return new JsonReference(this.Uri, ReadOnlySpan<char>.Empty);
+                return new JsonReference(this.Uri, []);
             }
         }
 
@@ -365,7 +407,7 @@ public readonly struct JsonReference : IEquatable<JsonReference>
         {
             if (!strict && scheme.Equals(baseReference.Scheme, StringComparison.Ordinal))
             {
-                scheme = ReadOnlySpan<char>.Empty;
+                scheme = [];
             }
 
             if (scheme.Length > 0)
@@ -427,6 +469,131 @@ public readonly struct JsonReference : IEquatable<JsonReference>
         {
             ArrayPool<char>.Shared.Return(pathBuffer);
         }
+    }
+
+    /// <summary>
+    /// Makes a relative reference from an absolute base reference and an absolute target reference.
+    /// </summary>
+    /// <param name="other">The target reference.</param>
+    /// <returns>A reference relative to the base reference.</returns>
+    /// <exception cref="InvalidOperationException">One of the references was not absolute.</exception>
+    public JsonReference MakeRelative(in JsonReference other)
+    {
+        if (!this.HasAbsoluteUri)
+        {
+            throw new InvalidOperationException("The base reference must be absolute to produce a relative URI");
+        }
+
+        if (!other.HasAbsoluteUri)
+        {
+            throw new InvalidOperationException("The target reference must be absolute to produce a relative URI");
+        }
+
+        JsonReferenceBuilder uriBuilder = this.AsBuilder();
+        JsonReferenceBuilder otherBuilder = other.AsBuilder();
+
+        if (uriBuilder.Scheme.Equals(otherBuilder.Scheme, StringComparison.Ordinal) &&
+            uriBuilder.Host.Equals(otherBuilder.Host, StringComparison.Ordinal) &&
+            uriBuilder.Port.Equals(otherBuilder.Port, StringComparison.Ordinal))
+        {
+            ReadOnlySpan<char> thisPath = this.IsImplicitFile ? this.Uri : uriBuilder.Path;
+            ReadOnlySpan<char> otherPath = other.IsImplicitFile ? other.Uri : otherBuilder.Path;
+            string relativeUriString = PathDifference(thisPath, otherPath, false);
+            ReadOnlySpan<char> relativeUriStringSpan = relativeUriString.AsSpan();
+
+            // Relative Uri's cannot have a colon ':' in the first path segment (RFC 3986, Section 4.2)
+            if (CheckForColonInFirstPathSegment(relativeUriStringSpan) &&
+                !otherPath.Equals(relativeUriStringSpan, StringComparison.Ordinal))
+            {
+                relativeUriString = "./" + relativeUriString;
+            }
+
+            return new(relativeUriString.AsSpan(), other.Fragment);
+        }
+
+        return other;
+    }
+
+#if NET8_0_OR_GREATER
+    /// <inheritdoc/>
+    public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+    {
+        bool result = this.reference.Span.TryCopyTo(destination);
+        charsWritten = result ? this.reference.Length : 0;
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public string ToString(string? format, IFormatProvider? formatProvider)
+    {
+        return this.reference.ToString();
+    }
+#endif
+
+    private static bool CheckForColonInFirstPathSegment(ReadOnlySpan<char> uriString)
+    {
+        // Check for anything that may terminate the first regular path segment
+        // or an illegal colon
+#if NET8_0_OR_GREATER
+        int index = uriString.IndexOfAny(SegmentSeparatorChars);
+#else
+        int index = uriString.IndexOfAny(SegmentSeparatorChars.Span);
+#endif
+        return (uint)index < (uint)uriString.Length && uriString[index] == ':';
+    }
+
+    private static JsonReference PathDifference(ReadOnlySpan<char> path1, ReadOnlySpan<char> path2, bool compareCase)
+    {
+        int i;
+        int si = -1;
+
+        for (i = 0; (i < path1.Length) && (i < path2.Length); ++i)
+        {
+            if ((path1[i] != path2[i])
+                && (compareCase
+                    || (char.ToLowerInvariant(path1[i])
+                        != char.ToLowerInvariant(path2[i]))))
+            {
+                break;
+            }
+            else if (path1[i] == '/')
+            {
+                si = i;
+            }
+        }
+
+        if (i == 0)
+        {
+            return new(path2.ToString());
+        }
+
+        if ((i == path1.Length) && (i == path2.Length))
+        {
+            return default;
+        }
+
+        var relPath = new StringBuilder();
+
+        // Walk down several dirs
+        for (; i < path1.Length; ++i)
+        {
+            if (path1[i] == '/')
+            {
+                relPath.Append("../");
+            }
+        }
+
+        // Same path except that path1 ended with a file name and path2 didn't
+        if (relPath.Length == 0 && path2.Length - 1 == si)
+        {
+            return new("./"); // Truncate the file name
+        }
+
+#if NET8_0_OR_GREATER
+        return new(relPath.Append(path2[(si + 1)..]).ToString());
+#else
+        return new(relPath.Append(path2[(si + 1)..].ToArray()).ToString());
+#endif
     }
 
     private static int Merge(ReadOnlySpan<char> basePath, ReadOnlySpan<char> path, bool baseHasAuthority, in Memory<char> pathMemory)
@@ -667,7 +834,7 @@ public readonly struct JsonReference : IEquatable<JsonReference>
             return this.reference.Span[hi..];
         }
 
-        return ReadOnlySpan<char>.Empty;
+        return [];
     }
 
     private ReadOnlySpan<char> FindFragment(int start)
@@ -676,13 +843,13 @@ public readonly struct JsonReference : IEquatable<JsonReference>
 
         if (index >= this.reference.Length)
         {
-            return ReadOnlySpan<char>.Empty;
+            return [];
         }
 
         // Expect the leading '#'
         if (this.reference.Span[index] != '#')
         {
-            return ReadOnlySpan<char>.Empty;
+            return [];
         }
 
         return this.reference.Span[(index + 1)..];
@@ -694,13 +861,13 @@ public readonly struct JsonReference : IEquatable<JsonReference>
 
         if (index >= this.reference.Length)
         {
-            return ReadOnlySpan<char>.Empty;
+            return [];
         }
 
         // Expect the leading ?
         if (this.reference.Span[index] != '?')
         {
-            return ReadOnlySpan<char>.Empty;
+            return [];
         }
 
         index++;
@@ -719,7 +886,7 @@ public readonly struct JsonReference : IEquatable<JsonReference>
 
         if (index >= this.reference.Length)
         {
-            return ReadOnlySpan<char>.Empty;
+            return [];
         }
 
         while (index < this.reference.Length && this.reference.Span[index] != '?' && this.reference.Span[index] != '#')
@@ -737,7 +904,7 @@ public readonly struct JsonReference : IEquatable<JsonReference>
         // Expect the leading '//'
         if (index >= this.reference.Length || this.reference.Span[index] != '/' || this.reference.Span[index + 1] != '/')
         {
-            return ReadOnlySpan<char>.Empty;
+            return [];
         }
 
         index += 2;
@@ -755,7 +922,7 @@ public readonly struct JsonReference : IEquatable<JsonReference>
         // First character must be a letter for this to be a scheme.
         if (this.reference.Length == 0 || !char.IsLetter(this.reference.Span[0]))
         {
-            return ReadOnlySpan<char>.Empty;
+            return [];
         }
 
         // Start from the second character
@@ -770,6 +937,6 @@ public readonly struct JsonReference : IEquatable<JsonReference>
             return this.reference.Span[..(index + 1)];
         }
 
-        return ReadOnlySpan<char>.Empty;
+        return [];
     }
 }

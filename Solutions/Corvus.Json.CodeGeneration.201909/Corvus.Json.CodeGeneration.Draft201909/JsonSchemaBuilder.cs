@@ -36,9 +36,11 @@ public class JsonSchemaBuilder : JsonSchemaBuilderBase
     }
 
     /// <inheritdoc/>
-    protected override (JsonReference Location, TypeAndCode TypeAndCode) GenerateFilesForType((JsonReference Location, TypeDeclaration TypeDeclaration) typeForGeneration)
+    protected override (JsonReference Location, TypeAndCode TypeAndCode) GenerateFilesForType((JsonReference Location, TypeDeclaration TypeDeclaration) typeForGeneration, bool validateFormat)
     {
         var codeGenerator = new CodeGenerator(this, typeForGeneration.TypeDeclaration);
+        var codeGeneratorOneOf = new CodeGeneratorOneOf(this, typeForGeneration.TypeDeclaration);
+        var codeGeneratorAnyOf = new CodeGeneratorAnyOf(this, typeForGeneration.TypeDeclaration);
         var codeGeneratorArrayAdd = new CodeGeneratorArrayAdd(this, typeForGeneration.TypeDeclaration);
         var codeGeneratorArrayRemove = new CodeGeneratorArrayRemove(this, typeForGeneration.TypeDeclaration);
         var codeGeneratorArray = new CodeGeneratorArray(this, typeForGeneration.TypeDeclaration);
@@ -60,14 +62,15 @@ public class JsonSchemaBuilder : JsonSchemaBuilderBase
         var codeGeneratorValidateAllOf = new CodeGeneratorValidateAllOf(this, typeForGeneration.TypeDeclaration);
         var codeGeneratorValidateAnyOf = new CodeGeneratorValidateAnyOf(this, typeForGeneration.TypeDeclaration);
         var codeGeneratorValidateArray = new CodeGeneratorValidateArray(this, typeForGeneration.TypeDeclaration);
-        var codeGeneratorValidateFormat = new CodeGeneratorValidateFormat(this, typeForGeneration.TypeDeclaration);
+        var codeGeneratorValidateFormat = new CodeGeneratorValidateFormat(this, typeForGeneration.TypeDeclaration, validateFormat);
         var codeGeneratorValidateIfThenElse = new CodeGeneratorValidateIfThenElse(this, typeForGeneration.TypeDeclaration);
         var codeGeneratorValidateMediaTypeAndEncoding = new CodeGeneratorValidateMediaTypeAndEncoding(this, typeForGeneration.TypeDeclaration);
         var codeGeneratorValidateNot = new CodeGeneratorValidateNot(this, typeForGeneration.TypeDeclaration);
         var codeGeneratorValidateObject = new CodeGeneratorValidateObject(this, typeForGeneration.TypeDeclaration);
         var codeGeneratorValidateOneOf = new CodeGeneratorValidateOneOf(this, typeForGeneration.TypeDeclaration);
         var codeGeneratorValidateRef = new CodeGeneratorValidateRef(this, typeForGeneration.TypeDeclaration);
-        var codeGeneratorValidate = new CodeGeneratorValidate(this, typeForGeneration.TypeDeclaration);
+        var codeGeneratorValidateRecursiveRef = new CodeGeneratorValidateRecursiveRef(this, typeForGeneration.TypeDeclaration);
+        var codeGeneratorValidate = new CodeGeneratorValidate(this, typeForGeneration.TypeDeclaration, validateFormat);
         var codeGeneratorValidateType = new CodeGeneratorValidateType(this, typeForGeneration.TypeDeclaration);
 
         string dotnetTypeName = typeForGeneration.TypeDeclaration.DotnetTypeName!;
@@ -76,6 +79,16 @@ public class JsonSchemaBuilder : JsonSchemaBuilderBase
 
         files.Add(new(codeGenerator.TransformText(), $"{fileName}.cs"));
         files.Add(new(codeGeneratorValidate.TransformText(), $"{fileName}.Validate.cs"));
+
+        if (codeGeneratorAnyOf.ShouldGenerate)
+        {
+            files.Add(new(codeGeneratorAnyOf.TransformText(), $"{fileName}.AnyOf.cs"));
+        }
+
+        if (codeGeneratorOneOf.ShouldGenerate)
+        {
+            files.Add(new(codeGeneratorOneOf.TransformText(), $"{fileName}.OneOf.cs"));
+        }
 
         if (codeGeneratorArrayAdd.ShouldGenerate)
         {
@@ -215,6 +228,11 @@ public class JsonSchemaBuilder : JsonSchemaBuilderBase
         if (codeGeneratorValidateRef.ShouldGenerate)
         {
             files.Add(new(codeGeneratorValidateRef.TransformText(), $"{fileName}.Validate.Ref.cs"));
+        }
+
+        if (codeGeneratorValidateRecursiveRef.ShouldGenerate)
+        {
+            files.Add(new(codeGeneratorValidateRecursiveRef.TransformText(), $"{fileName}.Validate.RecursiveRef.cs"));
         }
 
         if (codeGeneratorValidateType.ShouldGenerate)

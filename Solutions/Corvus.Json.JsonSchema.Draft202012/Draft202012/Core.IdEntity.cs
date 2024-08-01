@@ -19,7 +19,7 @@ namespace Corvus.Json.JsonSchema.Draft202012;
 public readonly partial struct Core
 {
     /// <summary>
-    /// A type generated from a JsonSchema specification.
+    /// Generated from JSON Schema.
     /// </summary>
     [System.Text.Json.Serialization.JsonConverter(typeof(Corvus.Json.Internal.JsonValueConverter<IdEntity>))]
     public readonly partial struct IdEntity
@@ -48,6 +48,10 @@ public readonly partial struct Core
             this.stringBacking = string.Empty;
         }
 
+        /// <summary>
+        /// Gets the schema location from which this type was generated.
+        /// </summary>
+        public static string SchemaLocation { get; } = "https://json-schema.org/draft/2020-12/meta/core#/properties/$id";
         /// <summary>
         /// Gets a Null instance.
         /// </summary>
@@ -304,24 +308,25 @@ public readonly partial struct Core
             return new(value);
         }
 
-        /// <summary>
-        /// Gets an instance of the JSON value from a boolean value.
-        /// </summary>
-        /// <typeparam name = "TValue">The type of the value.</typeparam>
-        /// <param name = "value">The value from which to instantiate the instance.</param>
-        /// <returns>An instance of this type, initialized from the value.</returns>
-        /// <remarks>This will be IdEntity.Undefined if the type is not compatible.</remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static IdEntity IJsonValue<IdEntity>.FromBoolean<TValue>(in TValue value)
+#if NET8_0_OR_GREATER
+    /// <summary>
+    /// Gets an instance of the JSON value from a boolean value.
+    /// </summary>
+    /// <typeparam name = "TValue">The type of the value.</typeparam>
+    /// <param name="value">The value from which to instantiate the instance.</param>
+    /// <returns>An instance of this type, initialized from the value.</returns>
+    /// <remarks>This will be IdEntity.Undefined if the type is not compatible.</remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static IdEntity IJsonValue<IdEntity>.FromBoolean<TValue>(in TValue value)
+    {
+        if (value.HasJsonElementBacking)
         {
-            if (value.HasJsonElementBacking)
-            {
-                return new(value.AsJsonElement);
-            }
-
-            return Undefined;
+            return new(value.AsJsonElement);
         }
 
+        return Undefined;
+    }
+#endif
         /// <summary>
         /// Gets an instance of the JSON value from a string value.
         /// </summary>
@@ -340,66 +345,73 @@ public readonly partial struct Core
 
             if (value.ValueKind == JsonValueKind.String)
             {
-                return new((string)value);
+#if NET8_0_OR_GREATER
+            return new((string)value);
+#else
+                return new((string)value.AsString);
+#endif
             }
 
             return Undefined;
         }
 
-        /// <summary>
-        /// Gets an instance of the JSON value from a number value.
-        /// </summary>
-        /// <typeparam name = "TValue">The type of the value.</typeparam>
-        /// <param name = "value">The value from which to instantiate the instance.</param>
-        /// <returns>An instance of this type, initialized from the value.</returns>
-        /// <remarks>This will be IdEntity.Undefined if the type is not compatible.</remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static IdEntity IJsonValue<IdEntity>.FromNumber<TValue>(in TValue value)
+#if NET8_0_OR_GREATER
+    /// <summary>
+    /// Gets an instance of the JSON value from a number value.
+    /// </summary>
+    /// <typeparam name="TValue">The type of the value.</typeparam>
+    /// <param name="value">The value from which to instantiate the instance.</param>
+    /// <returns>An instance of this type, initialized from the value.</returns>
+    /// <remarks>This will be IdEntity.Undefined if the type is not compatible.</remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static IdEntity IJsonValue<IdEntity>.FromNumber<TValue>(in TValue value)
+    {
+        if (value.HasJsonElementBacking)
         {
-            if (value.HasJsonElementBacking)
-            {
-                return new(value.AsJsonElement);
-            }
-
-            return Undefined;
+            return new(value.AsJsonElement);
         }
 
-        /// <summary>
-        /// Gets an instance of the JSON value from an array value.
-        /// </summary>
-        /// <typeparam name = "TValue">The type of the value.</typeparam>
-        /// <param name = "value">The value from which to instantiate the instance.</param>
-        /// <returns>An instance of this type, initialized from the value.</returns>
-        /// <remarks>This will be IdEntity.Undefined if the type is not compatible.</remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static IdEntity IJsonValue<IdEntity>.FromArray<TValue>(in TValue value)
+        return Undefined;
+    }
+#endif
+#if NET8_0_OR_GREATER
+    /// <summary>
+    /// Gets an instance of the JSON value from an array value.
+    /// </summary>
+    /// <typeparam name="TValue">The type of the value.</typeparam>
+    /// <param name="value">The value from which to instantiate the instance.</param>
+    /// <returns>An instance of this type, initialized from the value.</returns>
+    /// <remarks>This will be IdEntity.Undefined if the type is not compatible.</remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static IdEntity IJsonValue<IdEntity>.FromArray<TValue>(in TValue value)
+    {
+        if (value.HasJsonElementBacking)
         {
-            if (value.HasJsonElementBacking)
-            {
-                return new(value.AsJsonElement);
-            }
-
-            return Undefined;
+            return new(value.AsJsonElement);
         }
 
-        /// <summary>
-        /// Gets an instance of the JSON value from an object value.
-        /// </summary>
-        /// <typeparam name = "TValue">The type of the value.</typeparam>
-        /// <param name = "value">The value from which to instantiate the instance.</param>
-        /// <returns>An instance of this type, initialized from the value.</returns>
-        /// <remarks>This will be IdEntity.Undefined if the type is not compatible.</remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static IdEntity IJsonValue<IdEntity>.FromObject<TValue>(in TValue value)
+        return Undefined;
+    }
+#endif
+#if NET8_0_OR_GREATER
+    /// <summary>
+    /// Gets an instance of the JSON value from an object value.
+    /// </summary>
+    /// <typeparam name="TValue">The type of the value.</typeparam>
+    /// <param name="value">The value from which to instantiate the instance.</param>
+    /// <returns>An instance of this type, initialized from the value.</returns>
+    /// <remarks>This will be IdEntity.Undefined if the type is not compatible.</remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static IdEntity IJsonValue<IdEntity>.FromObject<TValue>(in TValue value)
+    {
+        if (value.HasJsonElementBacking)
         {
-            if (value.HasJsonElementBacking)
-            {
-                return new(value.AsJsonElement);
-            }
-
-            return Undefined;
+            return new(value.AsJsonElement);
         }
 
+        return Undefined;
+    }
+#endif
         /// <summary>
         /// Parses a JSON string into a IdEntity.
         /// </summary>
@@ -467,7 +479,11 @@ public readonly partial struct Core
         /// <returns>The parsed value.</returns>
         static IdEntity ParseValue(ReadOnlySpan<char> buffer)
         {
-            return IJsonValue<IdEntity>.ParseValue(buffer);
+#if NET8_0_OR_GREATER
+        return IJsonValue<IdEntity>.ParseValue(buffer);
+#else
+            return JsonValueHelpers.ParseValue<IdEntity>(buffer);
+#endif
         }
 
         /// <summary>
@@ -477,7 +493,11 @@ public readonly partial struct Core
         /// <returns>The parsed value.</returns>
         static IdEntity ParseValue(ReadOnlySpan<byte> buffer)
         {
-            return IJsonValue<IdEntity>.ParseValue(buffer);
+#if NET8_0_OR_GREATER
+        return IJsonValue<IdEntity>.ParseValue(buffer);
+#else
+            return JsonValueHelpers.ParseValue<IdEntity>(buffer);
+#endif
         }
 
         /// <summary>
@@ -487,7 +507,11 @@ public readonly partial struct Core
         /// <returns>The parsed value.</returns>
         static IdEntity ParseValue(ref Utf8JsonReader reader)
         {
-            return IJsonValue<IdEntity>.ParseValue(ref reader);
+#if NET8_0_OR_GREATER
+        return IJsonValue<IdEntity>.ParseValue(ref reader);
+#else
+            return JsonValueHelpers.ParseValue<IdEntity>(ref reader);
+#endif
         }
 
         /// <summary>
@@ -499,22 +523,26 @@ public readonly partial struct Core
         public TTarget As<TTarget>()
             where TTarget : struct, IJsonValue<TTarget>
         {
-            if ((this.backing & Backing.JsonElement) != 0)
-            {
-                return TTarget.FromJson(this.jsonElementBacking);
-            }
+#if NET8_0_OR_GREATER
+        if ((this.backing & Backing.JsonElement) != 0)
+        {
+            return TTarget.FromJson(this.jsonElementBacking);
+        }
 
-            if ((this.backing & Backing.String) != 0)
-            {
-                return TTarget.FromString(this);
-            }
+        if ((this.backing & Backing.String) != 0)
+        {
+            return TTarget.FromString(this);
+        }
 
-            if ((this.backing & Backing.Null) != 0)
-            {
-                return TTarget.Null;
-            }
+        if ((this.backing & Backing.Null) != 0)
+        {
+            return TTarget.Null;
+        }
 
-            return TTarget.Undefined;
+        return TTarget.Undefined;
+#else
+            return this.As<IdEntity, TTarget>();
+#endif
         }
 
         /// <inheritdoc/>

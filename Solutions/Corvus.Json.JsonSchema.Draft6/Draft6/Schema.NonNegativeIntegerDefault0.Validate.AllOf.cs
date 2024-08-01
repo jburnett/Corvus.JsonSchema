@@ -17,7 +17,7 @@ namespace Corvus.Json.JsonSchema.Draft6;
 public readonly partial struct Schema
 {
     /// <summary>
-    /// A type generated from a JsonSchema specification.
+    /// Generated from JSON Schema.
     /// </summary>
     public readonly partial struct NonNegativeIntegerDefault0
     {
@@ -64,7 +64,7 @@ public readonly partial struct Schema
                 childContext1 = childContext1.PushValidationLocationArrayIndex(1);
             }
 
-            ValidationContext allOfResult1 = this.As<Corvus.Json.JsonSchema.Draft6.Schema.NonNegativeIntegerDefault0.AllOf1Entity>().Validate(childContext1.CreateChildContext(), level);
+            ValidationContext allOfResult1 = this.As<Corvus.Json.JsonSchema.Draft6.Schema.NonNegativeIntegerDefault0.DefaultValue0>().Validate(childContext1.CreateChildContext(), level);
             if (!allOfResult1.IsValid)
             {
                 if (level >= ValidationLevel.Detailed)

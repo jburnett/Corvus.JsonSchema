@@ -12,7 +12,7 @@ using Corvus.Json;
 
 namespace Corvus.Json.Benchmarking.Models;
 /// <summary>
-/// A type generated from a JsonSchema specification.
+/// A numeric representation of a person's height in meters.
 /// </summary>
 public readonly partial struct HeightRangeDouble
 {
@@ -30,7 +30,7 @@ public readonly partial struct HeightRangeDouble
         if (level > ValidationLevel.Basic)
         {
             result = result.UsingStack();
-            result = result.PushSchemaLocation("D:/source/corvus-dotnet/Corvus.JsonSchema/Solutions/Sandbox/PersonModel/person-schema.json#/$defs/HeightRangeDouble");
+            result = result.PushSchemaLocation("person-schema.json#/$defs/HeightRangeDouble");
         }
 
         JsonValueKind valueKind = this.ValueKind;

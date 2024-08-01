@@ -16,7 +16,7 @@ public readonly partial struct JsonPatchDocument
     public readonly partial struct Copy
     {
         /// <summary>
-        /// A type generated from a JsonSchema specification.
+        /// Generated from JSON Schema.
         /// </summary>
         public readonly partial struct OpEntity
         {
@@ -32,7 +32,7 @@ public readonly partial struct JsonPatchDocument
                 if (level > ValidationLevel.Basic)
                 {
                     result = result.UsingStack();
-                    result = result.PushSchemaLocation("D:/source/corvus-dotnet/Corvus.JsonSchema/Solutions/Corvus.Json.Patch/Corvus.Json.Patch/Model/json-patch.json#/$defs/Copy/properties/op");
+                    result = result.PushSchemaLocation("json-patch.json#/$defs/Copy/properties/op");
                 }
 
                 result = Corvus.Json.Validate.ValidateConst(this, result, level, __CorvusConstValue);

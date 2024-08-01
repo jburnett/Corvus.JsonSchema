@@ -8,6 +8,7 @@
 //------------------------------------------------------------------------------
 #nullable enable
 using System.Buffers;
+using System.Collections;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -16,9 +17,20 @@ using Corvus.Json.Internal;
 
 namespace Corvus.Json.Benchmarking.Models;
 /// <summary>
-/// A type generated from a JsonSchema specification.
+/// A component of a person's name.
 /// </summary>
-public readonly partial struct PersonNameElementArray : IJsonArray<PersonNameElementArray>
+/// <remarks>
+/// <para>
+/// This is an array of strings, each of which is a component of a person's name.
+/// </para>
+/// </remarks>
+
+#if NET8_0_OR_GREATER
+[CollectionBuilder(typeof(PersonNameElementArray), "Create")]
+public readonly partial struct PersonNameElementArray : IJsonArray<PersonNameElementArray>, IReadOnlyCollection<Corvus.Json.Benchmarking.Models.PersonNameElement>
+#else
+public readonly partial struct PersonNameElementArray : IJsonArray<PersonNameElementArray>, IReadOnlyCollection<Corvus.Json.Benchmarking.Models.PersonNameElement>
+#endif
 {
     /// <summary>
     /// Gets an empty array.
@@ -148,6 +160,16 @@ public readonly partial struct PersonNameElementArray : IJsonArray<PersonNameEle
     }
 
     /// <summary>
+    /// Create an array from the span of items.
+    /// </summary>
+    /// <param name = "items">The items from which to create the array.</param>
+    /// <returns>The array containing the items.</returns>
+    public static PersonNameElementArray Create(ReadOnlySpan<Corvus.Json.Benchmarking.Models.PersonNameElement> items)
+    {
+        return new([..items]);
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref = "PersonNameElementArray"/> struct.
     /// </summary>
     /// <param name = "value1">The first value from which to construct the instance.</param>
@@ -251,10 +273,6 @@ public readonly partial struct PersonNameElementArray : IJsonArray<PersonNameEle
     /// </summary>
     /// <param name = "items">The items from which to create the array.</param>
     /// <returns>The new array created from the items.</returns>
-    /// <remarks>
-    /// This will serialize the items to create the underlying JsonArray. Note the
-    /// other overloads which avoid this serialization step.
-    /// </remarks>
     public static PersonNameElementArray FromRange(IEnumerable<JsonAny> items)
     {
         ImmutableList<JsonAny>.Builder builder = ImmutableList.CreateBuilder<JsonAny>();
@@ -271,10 +289,6 @@ public readonly partial struct PersonNameElementArray : IJsonArray<PersonNameEle
     /// </summary>
     /// <param name = "items">The items from which to create the array.</param>
     /// <returns>The new array created from the items.</returns>
-    /// <remarks>
-    /// This will serialize the items to create the underlying JsonArray. Note the
-    /// other overloads which avoid this serialization step.
-    /// </remarks>
     public static PersonNameElementArray FromRange<T>(IEnumerable<T> items)
         where T : struct, IJsonValue<T>
     {
@@ -286,6 +300,21 @@ public readonly partial struct PersonNameElementArray : IJsonArray<PersonNameEle
 
         return new PersonNameElementArray(builder.ToImmutable());
     }
+
+    /// <inheritdoc/>
+    IEnumerator<Corvus.Json.Benchmarking.Models.PersonNameElement> IEnumerable<Corvus.Json.Benchmarking.Models.PersonNameElement>.GetEnumerator()
+    {
+        return EnumerateArray();
+    }
+
+    /// <inheritdoc/>
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return EnumerateArray();
+    }
+
+    /// <inheritdoc/>
+    int IReadOnlyCollection<Corvus.Json.Benchmarking.Models.PersonNameElement>.Count => this.GetArrayLength();
 
     /// <inheritdoc/>
     public ImmutableList<JsonAny> AsImmutableList()

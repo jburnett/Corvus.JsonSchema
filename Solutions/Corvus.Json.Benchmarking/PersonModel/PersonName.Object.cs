@@ -15,8 +15,34 @@ using Corvus.Json.Internal;
 
 namespace Corvus.Json.Benchmarking.Models;
 /// <summary>
-/// A type generated from a JsonSchema specification.
+/// A name of a person.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This supports the full range of names, including those with multiple parts, prefixes, and suffixes.
+/// </para>
+/// <para>
+/// It is not restricted to a single part, such as a given name or family name.
+/// </para>
+/// <para>
+/// Examples:
+/// <example>
+/// <code>
+/// {"familyName":"Jones","givenName":"Terry"}
+/// </code>
+/// </example>
+/// <example>
+/// <code>
+/// {"familyName":"Jones","givenName":"Terry","otherNames":["Lee","Gary"]}
+/// </code>
+/// </example>
+/// <example>
+/// <code>
+/// {"familyName":"Jones","givenName":"Terry","otherNames":"Lee"}
+/// </code>
+/// </example>
+/// </para>
+/// </remarks>
 public readonly partial struct PersonName : IJsonObject<PersonName>
 {
     /// <summary>
@@ -291,7 +317,11 @@ public readonly partial struct PersonName : IJsonObject<PersonName>
         {
             if (name.TryGetProperty(this.jsonElementBacking, out JsonElement result))
             {
+#if NET8_0_OR_GREATER
                 value = TValue.FromJson(result);
+#else
+                value = JsonValueNetStandard20Extensions.FromJsonElement<TValue>(result);
+#endif
                 return true;
             }
 
@@ -303,7 +333,11 @@ public readonly partial struct PersonName : IJsonObject<PersonName>
         {
             if (this.objectBacking.TryGetValue(name, out JsonAny result))
             {
+#if NET8_0_OR_GREATER
                 value = TValue.FromAny(result);
+#else
+                value = result.As<TValue>();
+#endif
                 return true;
             }
 
@@ -322,7 +356,11 @@ public readonly partial struct PersonName : IJsonObject<PersonName>
         {
             if (this.jsonElementBacking.TryGetProperty(name, out JsonElement result))
             {
+#if NET8_0_OR_GREATER
                 value = TValue.FromJson(result);
+#else
+                value = JsonValueNetStandard20Extensions.FromJsonElement<TValue>(result);
+#endif
                 return true;
             }
 
@@ -334,7 +372,11 @@ public readonly partial struct PersonName : IJsonObject<PersonName>
         {
             if (this.objectBacking.TryGetValue(name, out JsonAny result))
             {
+#if NET8_0_OR_GREATER
                 value = TValue.FromAny(result);
+#else
+                value = result.As<TValue>();
+#endif
                 return true;
             }
 
@@ -353,7 +395,11 @@ public readonly partial struct PersonName : IJsonObject<PersonName>
         {
             if (this.jsonElementBacking.TryGetProperty(name, out JsonElement result))
             {
+#if NET8_0_OR_GREATER
                 value = TValue.FromJson(result);
+#else
+                value = JsonValueNetStandard20Extensions.FromJsonElement<TValue>(result);
+#endif
                 return true;
             }
 
@@ -365,7 +411,11 @@ public readonly partial struct PersonName : IJsonObject<PersonName>
         {
             if (this.objectBacking.TryGetValue(name, out JsonAny result))
             {
+#if NET8_0_OR_GREATER
                 value = TValue.FromAny(result);
+#else
+                value = result.As<TValue>();
+#endif
                 return true;
             }
 
@@ -384,7 +434,11 @@ public readonly partial struct PersonName : IJsonObject<PersonName>
         {
             if (this.jsonElementBacking.TryGetProperty(utf8Name, out JsonElement result))
             {
+#if NET8_0_OR_GREATER
                 value = TValue.FromJson(result);
+#else
+                value = JsonValueNetStandard20Extensions.FromJsonElement<TValue>(result);
+#endif
                 return true;
             }
 
@@ -396,7 +450,11 @@ public readonly partial struct PersonName : IJsonObject<PersonName>
         {
             if (this.objectBacking.TryGetValue(utf8Name, out JsonAny result))
             {
+#if NET8_0_OR_GREATER
                 value = TValue.FromAny(result);
+#else
+                value = result.As<TValue>();
+#endif
                 return true;
             }
 

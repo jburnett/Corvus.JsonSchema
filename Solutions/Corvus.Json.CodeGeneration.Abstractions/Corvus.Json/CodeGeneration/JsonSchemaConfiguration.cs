@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Corvus.Json.CodeGeneration;
 
@@ -11,6 +12,15 @@ namespace Corvus.Json.CodeGeneration;
 /// </summary>
 public class JsonSchemaConfiguration
 {
+    /// <summary>
+    /// A callback for name generation.
+    /// </summary>
+    /// <param name="type">The type for which to generate a name.</param>
+    /// <param name="reference">The reference to the type.</param>
+    /// <param name="name">The proposed name, or <c>null</c> if no name is proposed.</param>
+    /// <returns><see langword="true"/> if the generator proposes a name.</returns>
+    public delegate bool NameGenerator(TypeDeclaration type, JsonReferenceBuilder reference, [NotNullWhen(true)] out string? name);
+
     /// <summary>
     /// Gets or sets the ID keyword for the schema model.
     /// </summary>
@@ -34,17 +44,17 @@ public class JsonSchemaConfiguration
     /// <summary>
     /// Gets or sets the reference keywords for the schema model.
     /// </summary>
-    public ImmutableArray<RefKeyword> RefKeywords { get; set; } = ImmutableArray<RefKeyword>.Empty;
+    public ImmutableArray<RefKeyword> RefKeywords { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the anchor keywords for the schema model.
     /// </summary>
-    public ImmutableArray<AnchorKeyword> AnchorKeywords { get; set; } = ImmutableArray<AnchorKeyword>.Empty;
+    public ImmutableArray<AnchorKeyword> AnchorKeywords { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the ref-resolvable keywords for the schema model.
     /// </summary>
-    public ImmutableArray<RefResolvableKeyword> RefResolvableKeywords { get; set; } = ImmutableArray<RefResolvableKeyword>.Empty;
+    public ImmutableArray<RefResolvableKeyword> RefResolvableKeywords { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the list of non-reducing keywords for the schema model.
@@ -52,7 +62,7 @@ public class JsonSchemaConfiguration
     /// <remarks>
     /// These are the keywords that, if placed alongside a reference keyword, prevent the local type from being reduced to the referenced type.
     /// </remarks>
-    public ImmutableHashSet<string> IrreducibleKeywords { get; set; } = ImmutableHashSet<string>.Empty;
+    public ImmutableHashSet<string> IrreducibleKeywords { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the list of definition keywords for the schema model.
@@ -60,12 +70,12 @@ public class JsonSchemaConfiguration
     /// <remarks>
     /// These are the keywords that, while they are ref resolvable, do not contribute directly to a type declaration.
     /// </remarks>
-    public ImmutableHashSet<string> DefinitionKeywords { get; set; } = ImmutableHashSet<string>.Empty;
+    public ImmutableHashSet<string> DefinitionKeywords { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the list of words reserved by the generator, which may not be used as names.
     /// </summary>
-    public ImmutableHashSet<string> GeneratorReservedWords { get; set; } = ImmutableHashSet<string>.Empty;
+    public ImmutableHashSet<string> GeneratorReservedWords { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the validation semantic model to use.
@@ -83,9 +93,19 @@ public class JsonSchemaConfiguration
     public Predicate<JsonAny> IsExplicitArrayType { get; set; } = static _ => false;
 
     /// <summary>
+    /// Gets or sets a predicate that indicates whether the given schema is an explicit map type.
+    /// </summary>
+    public Predicate<JsonAny> IsExplicitMapType { get; set; } = static _ => false;
+
+    /// <summary>
     /// Gets or sets a predicate that indicates whether the given schema is a simple type.
     /// </summary>
     public Predicate<JsonAny> IsSimpleType { get; set; } = static _ => false;
+
+    /// <summary>
+    /// Gets or sets a callback that proposes a name for <see cref="TypeDeclaration"/>.
+    /// </summary>
+    public NameGenerator ProposeName { get; set; } = NullNameGenerator;
 
     /// <summary>
     /// Gets or sets a function to get the built-in type name for a schema with particular validation semantics.
@@ -96,4 +116,10 @@ public class JsonSchemaConfiguration
     /// Gets or sets a function to build dotnet properties for given type declaration.
     /// </summary>
     public Action<IPropertyBuilder, TypeDeclaration, TypeDeclaration, HashSet<TypeDeclaration>, bool> FindAndBuildPropertiesAdapter { get; set; } = static (_, _, _, _, _) => { };
+
+    private static bool NullNameGenerator(TypeDeclaration type, JsonReferenceBuilder reference, [NotNullWhen(true)] out string? name)
+    {
+        name = null;
+        return false;
+    }
 }

@@ -14,8 +14,13 @@ namespace Corvus.Json.Patch.Model;
 public readonly partial struct JsonPatchDocument
 {
     /// <summary>
-    /// A type generated from a JsonSchema specification.
+    /// Generated from JSON Schema.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A single JSON Patch operation
+    /// </para>
+    /// </remarks>
     public readonly partial struct PatchOperation
     {
         /// <inheritdoc/>
@@ -30,13 +35,7 @@ public readonly partial struct JsonPatchDocument
             if (level > ValidationLevel.Basic)
             {
                 result = result.UsingStack();
-                result = result.PushSchemaLocation("D:/source/corvus-dotnet/Corvus.JsonSchema/Solutions/Corvus.Json.Patch/Corvus.Json.Patch/Model/json-patch.json#/$defs/PatchOperation");
-            }
-
-            result = this.ValidateAllOf(result, level);
-            if (level == ValidationLevel.Flag && !result.IsValid)
-            {
-                return result;
+                result = result.PushSchemaLocation("json-patch.json#/$defs/PatchOperation");
             }
 
             result = this.ValidateOneOf(result, level);

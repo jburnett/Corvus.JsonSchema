@@ -14,7 +14,7 @@ namespace Corvus.Json.Patch.Model;
 public readonly partial struct JsonPatchDocument
 {
     /// <summary>
-    /// A type generated from a JsonSchema specification.
+    /// Generated from JSON Schema.
     /// </summary>
     public readonly partial struct PatchOperationCommon
     {
@@ -30,7 +30,7 @@ public readonly partial struct JsonPatchDocument
             if (level > ValidationLevel.Basic)
             {
                 result = result.UsingStack();
-                result = result.PushSchemaLocation("D:/source/corvus-dotnet/Corvus.JsonSchema/Solutions/Corvus.Json.Patch/Corvus.Json.Patch/Model/json-patch.json#/$defs/PatchOperationCommon");
+                result = result.PushSchemaLocation("json-patch.json#/$defs/PatchOperationCommon");
             }
 
             JsonValueKind valueKind = this.ValueKind;

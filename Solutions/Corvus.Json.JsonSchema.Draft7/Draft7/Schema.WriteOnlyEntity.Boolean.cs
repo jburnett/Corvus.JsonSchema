@@ -18,7 +18,7 @@ namespace Corvus.Json.JsonSchema.Draft7;
 public readonly partial struct Schema
 {
     /// <summary>
-    /// A type generated from a JsonSchema specification.
+    /// Generated from JSON Schema.
     /// </summary>
     public readonly partial struct WriteOnlyEntity : IJsonBoolean<WriteOnlyEntity>
     {
@@ -61,7 +61,7 @@ public readonly partial struct Schema
         /// </summary>
         /// <param name = "value">The value from which to convert.</param>
         /// <exception cref = "InvalidOperationException">The value was not a string.</exception>
-        public static explicit operator bool (WriteOnlyEntity value)
+        public static implicit operator bool (WriteOnlyEntity value)
         {
             return value.GetBoolean() ?? throw new InvalidOperationException();
         }

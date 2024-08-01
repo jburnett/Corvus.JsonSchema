@@ -2,7 +2,7 @@
 	<Import Project="$(EndjinProjectPropsPath)" Condition="$(EndjinProjectPropsPath) != ''" />
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
@@ -16,14 +16,16 @@
 		<Description>A library for generating code from .NET types representing data types found in JSON.</Description>
 	</PropertyGroup>
 
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+		<Compile Remove="Corvus.Json\CodeGeneration\DictionaryExtensionsNetStandard20.cs" />
+	</ItemGroup>
+
 	<ItemGroup>
-		<PackageReference Include="Corvus.Extensions" Version="1.1.11" />
-		<PackageReference Include="Endjin.RecommendedPractices.GitHub" Version="2.1.7">
+		<PackageReference Include="Endjin.RecommendedPractices.GitHub" Version="2.1.12">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.7.0" />
-		<PackageReference Include="System.CodeDom" Version="8.0.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -35,7 +37,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Update="Roslynator.Analyzers" Version="4.6.2" />
+		<PackageReference Update="Roslynator.Analyzers" Version="4.11.0" />
 	</ItemGroup>
 
 </Project>
+

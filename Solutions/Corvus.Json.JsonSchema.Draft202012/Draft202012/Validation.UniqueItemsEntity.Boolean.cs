@@ -18,7 +18,7 @@ namespace Corvus.Json.JsonSchema.Draft202012;
 public readonly partial struct Validation
 {
     /// <summary>
-    /// A type generated from a JsonSchema specification.
+    /// Generated from JSON Schema.
     /// </summary>
     public readonly partial struct UniqueItemsEntity : IJsonBoolean<UniqueItemsEntity>
     {
@@ -61,7 +61,7 @@ public readonly partial struct Validation
         /// </summary>
         /// <param name = "value">The value from which to convert.</param>
         /// <exception cref = "InvalidOperationException">The value was not a string.</exception>
-        public static explicit operator bool (UniqueItemsEntity value)
+        public static implicit operator bool (UniqueItemsEntity value)
         {
             return value.GetBoolean() ?? throw new InvalidOperationException();
         }

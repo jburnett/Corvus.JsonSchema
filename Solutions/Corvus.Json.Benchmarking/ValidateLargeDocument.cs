@@ -42,7 +42,7 @@ public class ValidateLargeDocument
     /// <summary>
     /// Global setup.
     /// </summary>
-    /// <returns>A <see cref="Task"/> which completes once cleanup is complete.</returns>
+    /// <returns>A <see cref="Task"/> which completes once clean-up is complete.</returns>
     [GlobalSetup]
     public Task GlobalSetup()
     {
@@ -62,9 +62,9 @@ public class ValidateLargeDocument
     }
 
     /// <summary>
-    /// Global cleanup.
+    /// Global clean-up.
     /// </summary>
-    /// <returns>A <see cref="Task"/> which completes once cleanup is complete.</returns>
+    /// <returns>A <see cref="Task"/> which completes once clean-up is complete.</returns>
     [GlobalCleanup]
     public Task GlobalCleanup()
     {
@@ -96,9 +96,12 @@ public class ValidateLargeDocument
     public void ValidateLargeArrayJsonEverything()
     {
         JsonEverything.EvaluationResults result = this.schema!.Evaluate(this.node, Options);
-        if (!result.IsValid)
+        if (!result.IsValid && result.Errors is IReadOnlyDictionary<string, string> errors)
         {
-            result.Errors.ForEach(result => Console.WriteLine(result.Value));
+            foreach (KeyValuePair<string, string> r in errors)
+            {
+                Console.WriteLine(r.Value);
+            }
         }
     }
 }

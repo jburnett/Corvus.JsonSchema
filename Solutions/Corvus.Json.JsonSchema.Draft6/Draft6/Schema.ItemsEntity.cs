@@ -19,7 +19,7 @@ namespace Corvus.Json.JsonSchema.Draft6;
 public readonly partial struct Schema
 {
     /// <summary>
-    /// A type generated from a JsonSchema specification.
+    /// Generated from JSON Schema.
     /// </summary>
     [System.Text.Json.Serialization.JsonConverter(typeof(Corvus.Json.Internal.JsonValueConverter<ItemsEntity>))]
     public readonly partial struct ItemsEntity
@@ -54,6 +54,10 @@ public readonly partial struct Schema
             this.objectBacking = ImmutableList<JsonObjectProperty>.Empty;
         }
 
+        /// <summary>
+        /// Gets the schema location from which this type was generated.
+        /// </summary>
+        public static string SchemaLocation { get; } = "http://json-schema.org/draft-06/schema#/properties/items";
         /// <summary>
         /// Gets a Null instance.
         /// </summary>
@@ -382,42 +386,44 @@ public readonly partial struct Schema
             return Undefined;
         }
 
-        /// <summary>
-        /// Gets an instance of the JSON value from a string value.
-        /// </summary>
-        /// <typeparam name = "TValue">The type of the value.</typeparam>
-        /// <param name = "value">The value from which to instantiate the instance.</param>
-        /// <returns>An instance of this type, initialized from the value.</returns>
-        /// <remarks>This will be ItemsEntity.Undefined if the type is not compatible.</remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static ItemsEntity IJsonValue<ItemsEntity>.FromString<TValue>(in TValue value)
+#if NET8_0_OR_GREATER
+    /// <summary>
+    /// Gets an instance of the JSON value from a string value.
+    /// </summary>
+    /// <typeparam name="TValue">The type of the value.</typeparam>
+    /// <param name="value">The value from which to instantiate the instance.</param>
+    /// <returns>An instance of this type, initialized from the value.</returns>
+    /// <remarks>This will be ItemsEntity.Undefined if the type is not compatible.</remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static ItemsEntity IJsonValue<ItemsEntity>.FromString<TValue>(in TValue value)
+    {
+        if (value.HasJsonElementBacking)
         {
-            if (value.HasJsonElementBacking)
-            {
-                return new(value.AsJsonElement);
-            }
-
-            return Undefined;
+            return new(value.AsJsonElement);
         }
 
-        /// <summary>
-        /// Gets an instance of the JSON value from a number value.
-        /// </summary>
-        /// <typeparam name = "TValue">The type of the value.</typeparam>
-        /// <param name = "value">The value from which to instantiate the instance.</param>
-        /// <returns>An instance of this type, initialized from the value.</returns>
-        /// <remarks>This will be ItemsEntity.Undefined if the type is not compatible.</remarks>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static ItemsEntity IJsonValue<ItemsEntity>.FromNumber<TValue>(in TValue value)
+        return Undefined;
+    }
+#endif
+#if NET8_0_OR_GREATER
+    /// <summary>
+    /// Gets an instance of the JSON value from a number value.
+    /// </summary>
+    /// <typeparam name="TValue">The type of the value.</typeparam>
+    /// <param name="value">The value from which to instantiate the instance.</param>
+    /// <returns>An instance of this type, initialized from the value.</returns>
+    /// <remarks>This will be ItemsEntity.Undefined if the type is not compatible.</remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static ItemsEntity IJsonValue<ItemsEntity>.FromNumber<TValue>(in TValue value)
+    {
+        if (value.HasJsonElementBacking)
         {
-            if (value.HasJsonElementBacking)
-            {
-                return new(value.AsJsonElement);
-            }
-
-            return Undefined;
+            return new(value.AsJsonElement);
         }
 
+        return Undefined;
+    }
+#endif
         /// <summary>
         /// Gets an instance of the JSON value from an array value.
         /// </summary>
@@ -533,7 +539,11 @@ public readonly partial struct Schema
         /// <returns>The parsed value.</returns>
         static ItemsEntity ParseValue(ReadOnlySpan<char> buffer)
         {
-            return IJsonValue<ItemsEntity>.ParseValue(buffer);
+#if NET8_0_OR_GREATER
+        return IJsonValue<ItemsEntity>.ParseValue(buffer);
+#else
+            return JsonValueHelpers.ParseValue<ItemsEntity>(buffer);
+#endif
         }
 
         /// <summary>
@@ -543,7 +553,11 @@ public readonly partial struct Schema
         /// <returns>The parsed value.</returns>
         static ItemsEntity ParseValue(ReadOnlySpan<byte> buffer)
         {
-            return IJsonValue<ItemsEntity>.ParseValue(buffer);
+#if NET8_0_OR_GREATER
+        return IJsonValue<ItemsEntity>.ParseValue(buffer);
+#else
+            return JsonValueHelpers.ParseValue<ItemsEntity>(buffer);
+#endif
         }
 
         /// <summary>
@@ -553,7 +567,11 @@ public readonly partial struct Schema
         /// <returns>The parsed value.</returns>
         static ItemsEntity ParseValue(ref Utf8JsonReader reader)
         {
-            return IJsonValue<ItemsEntity>.ParseValue(ref reader);
+#if NET8_0_OR_GREATER
+        return IJsonValue<ItemsEntity>.ParseValue(ref reader);
+#else
+            return JsonValueHelpers.ParseValue<ItemsEntity>(ref reader);
+#endif
         }
 
         /// <summary>
@@ -565,32 +583,36 @@ public readonly partial struct Schema
         public TTarget As<TTarget>()
             where TTarget : struct, IJsonValue<TTarget>
         {
-            if ((this.backing & Backing.JsonElement) != 0)
-            {
-                return TTarget.FromJson(this.jsonElementBacking);
-            }
+#if NET8_0_OR_GREATER
+        if ((this.backing & Backing.JsonElement) != 0)
+        {
+            return TTarget.FromJson(this.jsonElementBacking);
+        }
 
-            if ((this.backing & Backing.Bool) != 0)
-            {
-                return TTarget.FromBoolean(this);
-            }
+        if ((this.backing & Backing.Bool) != 0)
+        {
+            return TTarget.FromBoolean(this);
+        }
 
-            if ((this.backing & Backing.Array) != 0)
-            {
-                return TTarget.FromArray(this);
-            }
+        if ((this.backing & Backing.Array) != 0)
+        {
+            return TTarget.FromArray(this);
+        }
 
-            if ((this.backing & Backing.Object) != 0)
-            {
-                return TTarget.FromObject(this);
-            }
+        if ((this.backing & Backing.Object) != 0)
+        {
+            return TTarget.FromObject(this);
+        }
 
-            if ((this.backing & Backing.Null) != 0)
-            {
-                return TTarget.Null;
-            }
+        if ((this.backing & Backing.Null) != 0)
+        {
+            return TTarget.Null;
+        }
 
-            return TTarget.Undefined;
+        return TTarget.Undefined;
+#else
+            return this.As<ItemsEntity, TTarget>();
+#endif
         }
 
         /// <inheritdoc/>

@@ -15,10 +15,11 @@ public partial class JsonSchemaTypeBuilder
 {
     private static readonly JsonReference BuiltInsLocation = new("https://github.com/Corvus-dotnet/Corvus/tree/master/schema/builtins");
 
-    private readonly Dictionary<string, TypeDeclaration> locatedTypeDeclarations = new();
+    private readonly Dictionary<string, TypeDeclaration> locatedTypeDeclarations = [];
     private readonly JsonSchemaRegistry schemaRegistry;
     private readonly IDocumentResolver documentResolver;
     private readonly IPropertyBuilder propertyBuilder;
+    private JsonReference baseLocation;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="JsonSchemaTypeBuilder"/> class.
@@ -45,16 +46,22 @@ public partial class JsonSchemaTypeBuilder
     /// If <see langword="true"/>, then references in this document should be taken as if the fragment was the root of a document. This will effectively generate a custom $id for the root scope.</param>
     /// <param name="baseUriToNamespaceMap">An optional map of base URIs in the document to namespaces in which to generate the types.</param>
     /// <param name="rootTypeName">An optional explicit type name for the root element.</param>
-    /// <returns>A <see cref="Task"/> which, when complete, provides the requested type declaration.</returns>
+    /// <returns>A <see cref="ValueTask"/> which, when complete, provides the requested type declaration.</returns>
     /// <remarks>
     /// <para>This method may be called multiple times to build up a set of related types, perhaps from multiple fragments of a single document, or a family of related documents.</para>
     /// <para>Any re-used schema will (if possible) be reduced to the same type, to build a single coherent type system.</para>
     /// <para>Once you have finished adding types, call <see cref="TypeDeclaration.GetTypesToGenerate()"/> to retrieve the set of types that need to be built for each root type you wish to build.</para>
     /// </remarks>
-    public async Task<TypeDeclaration?> AddTypeDeclarationsFor(JsonReference documentPath, string rootNamespace, bool rebaseAsRoot = false, ImmutableDictionary<string, string>? baseUriToNamespaceMap = null, string? rootTypeName = null)
+    public async ValueTask<TypeDeclaration?> AddTypeDeclarationsFor(JsonReference documentPath, string rootNamespace, bool rebaseAsRoot = false, ImmutableDictionary<string, string>? baseUriToNamespaceMap = null, string? rootTypeName = null)
     {
         // First we do a document "load" - this enables us to build the map of the schema, anchors etc.
-        JsonReference scope = await this.schemaRegistry.RegisterDocumentSchema(documentPath, rebaseAsRoot).ConfigureAwait(false);
+        (JsonReference scope, JsonReference baseReference) = await this.schemaRegistry.RegisterDocumentSchema(documentPath, rebaseAsRoot).ConfigureAwait(false);
+
+        if (!this.baseLocation.HasUri)
+        {
+            // Move down to the base location.
+            this.baseLocation = baseReference.Apply(new("."));
+        }
 
         // Then we do a second "contextual" pass over the loaded schema from the root location. This enables
         // us to build correct dynamic references.
@@ -83,8 +90,8 @@ public partial class JsonSchemaTypeBuilder
     /// </summary>
     /// <param name="reference">The reference to the document.</param>
     /// <param name="rebaseToRootPath">Whether we are rebasing the element to a root path.</param>
-    /// <returns>A <see cref="Task{ValidationSemantics}"/> that, when complete, provides the validation semantics for the reference.</returns>
-    public async Task<ValidationSemantics> GetValidationSemantics(JsonReference reference, bool rebaseToRootPath)
+    /// <returns>A <see cref="ValueTask{ValidationSemantics}"/> that, when complete, provides the validation semantics for the reference.</returns>
+    public async ValueTask<ValidationSemantics> GetValidationSemantics(JsonReference reference, bool rebaseToRootPath)
     {
         if (!rebaseToRootPath)
         {
@@ -100,6 +107,11 @@ public partial class JsonSchemaTypeBuilder
                 string? schemaValue = value.GetString();
                 if (schemaValue is string sv)
                 {
+                    if (sv == "http://json-schema.org/draft-04/schema" || sv == "http://json-schema.org/draft-04/schema#")
+                    {
+                        return ValidationSemantics.Draft4;
+                    }
+
                     if (sv == "http://json-schema.org/draft-06/schema" || sv == "http://json-schema.org/draft-06/schema#")
                     {
                         return ValidationSemantics.Draft6;
@@ -137,6 +149,22 @@ public partial class JsonSchemaTypeBuilder
     }
 
     /// <summary>
+    /// Gets reference for the target location relative to the base location.
+    /// </summary>
+    /// <param name="target">The target location.</param>
+    /// <returns>The relative location.</returns>
+    /// <remarks>The target must be an absolute location.</remarks>
+    public JsonReference GetRelativeLocationFor(JsonReference target)
+    {
+        if (target.IsImplicitFile)
+        {
+            return this.baseLocation.MakeRelative(target);
+        }
+
+        return target;
+    }
+
+    /// <summary>
     /// Replaces a located type declaration.
     /// </summary>
     /// <param name="location">The location for the replacement.</param>
@@ -168,13 +196,13 @@ public partial class JsonSchemaTypeBuilder
 
     private static void SetParents(TypeDeclaration rootTypeDeclaration)
     {
-        HashSet<TypeDeclaration> visitedTypes = new();
+        HashSet<TypeDeclaration> visitedTypes = [];
         SetParentsCore(rootTypeDeclaration, visitedTypes);
     }
 
     private void FindAndBuildPropertiesCore(TypeDeclaration rootTypeDeclaration)
     {
-        HashSet<TypeDeclaration> typesVisitedForBuild = new();
+        HashSet<TypeDeclaration> typesVisitedForBuild = [];
 
         this.FindAndBuildPropertiesCore(rootTypeDeclaration, typesVisitedForBuild);
 
@@ -191,7 +219,7 @@ public partial class JsonSchemaTypeBuilder
 
         typesVisitedForBuild.Add(type);
 
-        HashSet<TypeDeclaration> typesVisited = new();
+        HashSet<TypeDeclaration> typesVisited = [];
 
         this.JsonSchemaConfiguration.FindAndBuildPropertiesAdapter(this.propertyBuilder, type, type, typesVisited, false);
 
@@ -201,17 +229,17 @@ public partial class JsonSchemaTypeBuilder
         }
     }
 
-    private async Task<TypeDeclaration> BuildTypeDeclarationFor(LocatedSchema baseSchema)
+    private async ValueTask<TypeDeclaration> BuildTypeDeclarationFor(LocatedSchema baseSchema)
     {
         WalkContext context = new(this, baseSchema);
         return await this.BuildTypeDeclarationFor(context).ConfigureAwait(false);
     }
 
-    private async Task<TypeDeclaration> BuildTypeDeclarationFor(WalkContext context)
+    private async ValueTask<TypeDeclaration> BuildTypeDeclarationFor(WalkContext context)
     {
         if (!this.schemaRegistry.TryGetValue(context.SubschemaLocation, out LocatedSchema? schema))
         {
-            throw new InvalidOperationException($"Unable to find the schema at ${context.SubschemaLocation}");
+            throw new InvalidOperationException($"Unable to find the schema at {context.SubschemaLocation}");
         }
 
         if (TryGetBooleanSchemaTypeDeclaration(schema, out TypeDeclaration? booleanTypeDeclaration))
@@ -382,7 +410,7 @@ public partial class JsonSchemaTypeBuilder
         }
 
         string idv = (string)idValue;
-        if (context.Scope.Location.Uri.EndsWith(idv))
+        if (context.Scope.Location.Uri.EndsWith(idv.AsSpan()))
         {
             // Ignore ID if we were already directly in the dynamic scope.
             return false;

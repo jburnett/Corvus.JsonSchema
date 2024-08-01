@@ -16,7 +16,7 @@ namespace Corvus.Json.JsonSchema.Draft6;
 public readonly partial struct Schema
 {
     /// <summary>
-    /// A type generated from a JsonSchema specification.
+    /// Generated from JSON Schema.
     /// </summary>
     public readonly partial struct ItemsEntity
     {
@@ -48,7 +48,7 @@ public readonly partial struct Schema
         /// Conversion from <see cref = "Corvus.Json.JsonSchema.Draft6.Schema"/>.
         /// </summary>
         /// <param name = "value">The value from which to convert.</param>
-        public static implicit operator ItemsEntity(Corvus.Json.JsonSchema.Draft6.Schema value)
+        public static explicit operator ItemsEntity(Corvus.Json.JsonSchema.Draft6.Schema value)
         {
             if (value.HasJsonElementBacking)
             {
@@ -87,7 +87,7 @@ public readonly partial struct Schema
         /// Conversion from <see cref = "Corvus.Json.JsonSchema.Draft6.Schema.SchemaArray"/>.
         /// </summary>
         /// <param name = "value">The value from which to convert.</param>
-        public static implicit operator ItemsEntity(Corvus.Json.JsonSchema.Draft6.Schema.SchemaArray value)
+        public static explicit operator ItemsEntity(Corvus.Json.JsonSchema.Draft6.Schema.SchemaArray value)
         {
             if (value.HasJsonElementBacking)
             {

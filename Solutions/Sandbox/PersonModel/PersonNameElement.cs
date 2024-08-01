@@ -17,7 +17,7 @@ using Corvus.Json.Internal;
 
 namespace Corvus.Json.Benchmarking.Models;
 /// <summary>
-/// A type generated from a JsonSchema specification.
+/// A component of a person's name.
 /// </summary>
 [System.Text.Json.Serialization.JsonConverter(typeof(Corvus.Json.Internal.JsonValueConverter<PersonNameElement>))]
 public readonly partial struct PersonNameElement
@@ -46,6 +46,10 @@ public readonly partial struct PersonNameElement
         this.stringBacking = string.Empty;
     }
 
+    /// <summary>
+    /// Gets the schema location from which this type was generated.
+    /// </summary>
+    public static string SchemaLocation { get; } = "person-schema.json#/$defs/PersonNameElement";
     /// <summary>
     /// Gets a Null instance.
     /// </summary>
@@ -302,11 +306,12 @@ public readonly partial struct PersonNameElement
         return new(value);
     }
 
+#if NET8_0_OR_GREATER
     /// <summary>
     /// Gets an instance of the JSON value from a boolean value.
     /// </summary>
     /// <typeparam name = "TValue">The type of the value.</typeparam>
-    /// <param name = "value">The value from which to instantiate the instance.</param>
+    /// <param name="value">The value from which to instantiate the instance.</param>
     /// <returns>An instance of this type, initialized from the value.</returns>
     /// <remarks>This will be PersonNameElement.Undefined if the type is not compatible.</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -319,7 +324,7 @@ public readonly partial struct PersonNameElement
 
         return Undefined;
     }
-
+#endif
     /// <summary>
     /// Gets an instance of the JSON value from a string value.
     /// </summary>
@@ -338,17 +343,22 @@ public readonly partial struct PersonNameElement
 
         if (value.ValueKind == JsonValueKind.String)
         {
+#if NET8_0_OR_GREATER
             return new((string)value);
+#else
+            return new((string)value.AsString);
+#endif
         }
 
         return Undefined;
     }
 
+#if NET8_0_OR_GREATER
     /// <summary>
     /// Gets an instance of the JSON value from a number value.
     /// </summary>
-    /// <typeparam name = "TValue">The type of the value.</typeparam>
-    /// <param name = "value">The value from which to instantiate the instance.</param>
+    /// <typeparam name="TValue">The type of the value.</typeparam>
+    /// <param name="value">The value from which to instantiate the instance.</param>
     /// <returns>An instance of this type, initialized from the value.</returns>
     /// <remarks>This will be PersonNameElement.Undefined if the type is not compatible.</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -361,12 +371,13 @@ public readonly partial struct PersonNameElement
 
         return Undefined;
     }
-
+#endif
+#if NET8_0_OR_GREATER
     /// <summary>
     /// Gets an instance of the JSON value from an array value.
     /// </summary>
-    /// <typeparam name = "TValue">The type of the value.</typeparam>
-    /// <param name = "value">The value from which to instantiate the instance.</param>
+    /// <typeparam name="TValue">The type of the value.</typeparam>
+    /// <param name="value">The value from which to instantiate the instance.</param>
     /// <returns>An instance of this type, initialized from the value.</returns>
     /// <remarks>This will be PersonNameElement.Undefined if the type is not compatible.</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -379,12 +390,13 @@ public readonly partial struct PersonNameElement
 
         return Undefined;
     }
-
+#endif
+#if NET8_0_OR_GREATER
     /// <summary>
     /// Gets an instance of the JSON value from an object value.
     /// </summary>
-    /// <typeparam name = "TValue">The type of the value.</typeparam>
-    /// <param name = "value">The value from which to instantiate the instance.</param>
+    /// <typeparam name="TValue">The type of the value.</typeparam>
+    /// <param name="value">The value from which to instantiate the instance.</param>
     /// <returns>An instance of this type, initialized from the value.</returns>
     /// <remarks>This will be PersonNameElement.Undefined if the type is not compatible.</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -397,7 +409,7 @@ public readonly partial struct PersonNameElement
 
         return Undefined;
     }
-
+#endif
     /// <summary>
     /// Parses a JSON string into a PersonNameElement.
     /// </summary>
@@ -465,7 +477,11 @@ public readonly partial struct PersonNameElement
     /// <returns>The parsed value.</returns>
     static PersonNameElement ParseValue(ReadOnlySpan<char> buffer)
     {
+#if NET8_0_OR_GREATER
         return IJsonValue<PersonNameElement>.ParseValue(buffer);
+#else
+        return JsonValueHelpers.ParseValue<PersonNameElement>(buffer);
+#endif
     }
 
     /// <summary>
@@ -475,7 +491,11 @@ public readonly partial struct PersonNameElement
     /// <returns>The parsed value.</returns>
     static PersonNameElement ParseValue(ReadOnlySpan<byte> buffer)
     {
+#if NET8_0_OR_GREATER
         return IJsonValue<PersonNameElement>.ParseValue(buffer);
+#else
+        return JsonValueHelpers.ParseValue<PersonNameElement>(buffer);
+#endif
     }
 
     /// <summary>
@@ -485,7 +505,11 @@ public readonly partial struct PersonNameElement
     /// <returns>The parsed value.</returns>
     static PersonNameElement ParseValue(ref Utf8JsonReader reader)
     {
+#if NET8_0_OR_GREATER
         return IJsonValue<PersonNameElement>.ParseValue(ref reader);
+#else
+        return JsonValueHelpers.ParseValue<PersonNameElement>(ref reader);
+#endif
     }
 
     /// <summary>
@@ -497,6 +521,7 @@ public readonly partial struct PersonNameElement
     public TTarget As<TTarget>()
         where TTarget : struct, IJsonValue<TTarget>
     {
+#if NET8_0_OR_GREATER
         if ((this.backing & Backing.JsonElement) != 0)
         {
             return TTarget.FromJson(this.jsonElementBacking);
@@ -513,6 +538,9 @@ public readonly partial struct PersonNameElement
         }
 
         return TTarget.Undefined;
+#else
+        return this.As<PersonNameElement, TTarget>();
+#endif
     }
 
     /// <inheritdoc/>

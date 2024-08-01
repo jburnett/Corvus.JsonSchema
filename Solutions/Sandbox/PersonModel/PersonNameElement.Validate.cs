@@ -12,7 +12,7 @@ using Corvus.Json;
 
 namespace Corvus.Json.Benchmarking.Models;
 /// <summary>
-/// A type generated from a JsonSchema specification.
+/// A component of a person's name.
 /// </summary>
 public readonly partial struct PersonNameElement
 {
@@ -28,7 +28,7 @@ public readonly partial struct PersonNameElement
         if (level > ValidationLevel.Basic)
         {
             result = result.UsingStack();
-            result = result.PushSchemaLocation("D:/source/corvus-dotnet/Corvus.JsonSchema/Solutions/Sandbox/PersonModel/person-schema.json#/$defs/PersonNameElement");
+            result = result.PushSchemaLocation("person-schema.json#/$defs/PersonNameElement");
         }
 
         JsonValueKind valueKind = this.ValueKind;

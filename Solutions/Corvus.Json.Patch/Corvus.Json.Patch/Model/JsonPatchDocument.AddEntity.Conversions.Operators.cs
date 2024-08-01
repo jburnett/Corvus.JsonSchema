@@ -16,15 +16,20 @@ namespace Corvus.Json.Patch.Model;
 public readonly partial struct JsonPatchDocument
 {
     /// <summary>
-    /// A type generated from a JsonSchema specification.
+    /// Generated from JSON Schema.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Add operation. Value can be any JSON value.
+    /// </para>
+    /// </remarks>
     public readonly partial struct AddEntity
     {
         /// <summary>
         /// Conversion to <see cref = "Corvus.Json.Patch.Model.JsonPatchDocument.PatchOperationCommon"/>.
         /// </summary>
         /// <param name = "value">The value from which to convert.</param>
-        public static explicit operator Corvus.Json.Patch.Model.JsonPatchDocument.PatchOperationCommon(AddEntity value)
+        public static implicit operator Corvus.Json.Patch.Model.JsonPatchDocument.PatchOperationCommon(AddEntity value)
         {
             if ((value.backing & Backing.JsonElement) != 0)
             {
@@ -43,7 +48,7 @@ public readonly partial struct JsonPatchDocument
         /// Conversion from <see cref = "Corvus.Json.Patch.Model.JsonPatchDocument.PatchOperationCommon"/>.
         /// </summary>
         /// <param name = "value">The value from which to convert.</param>
-        public static implicit operator AddEntity(Corvus.Json.Patch.Model.JsonPatchDocument.PatchOperationCommon value)
+        public static explicit operator AddEntity(Corvus.Json.Patch.Model.JsonPatchDocument.PatchOperationCommon value)
         {
             if (value.HasJsonElementBacking)
             {

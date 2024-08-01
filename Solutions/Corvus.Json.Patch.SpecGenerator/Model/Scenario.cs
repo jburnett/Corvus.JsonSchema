@@ -17,7 +17,7 @@ using Corvus.Json.Internal;
 
 namespace Corvus.Json.Patch.SpecGenerator;
 /// <summary>
-/// A type generated from a JsonSchema specification.
+/// Generated from JSON Schema.
 /// </summary>
 [System.Text.Json.Serialization.JsonConverter(typeof(Corvus.Json.Internal.JsonValueConverter<Scenario>))]
 public readonly partial struct Scenario
@@ -46,6 +46,10 @@ public readonly partial struct Scenario
         this.objectBacking = ImmutableList<JsonObjectProperty>.Empty;
     }
 
+    /// <summary>
+    /// Gets the schema location from which this type was generated.
+    /// </summary>
+    public static string SchemaLocation { get; } = "json-patch-test.json#/$defs/Scenario";
     /// <summary>
     /// Gets a Null instance.
     /// </summary>
@@ -302,11 +306,12 @@ public readonly partial struct Scenario
         return new(value);
     }
 
+#if NET8_0_OR_GREATER
     /// <summary>
     /// Gets an instance of the JSON value from a boolean value.
     /// </summary>
     /// <typeparam name = "TValue">The type of the value.</typeparam>
-    /// <param name = "value">The value from which to instantiate the instance.</param>
+    /// <param name="value">The value from which to instantiate the instance.</param>
     /// <returns>An instance of this type, initialized from the value.</returns>
     /// <remarks>This will be Scenario.Undefined if the type is not compatible.</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -319,12 +324,13 @@ public readonly partial struct Scenario
 
         return Undefined;
     }
-
+#endif
+#if NET8_0_OR_GREATER
     /// <summary>
     /// Gets an instance of the JSON value from a string value.
     /// </summary>
-    /// <typeparam name = "TValue">The type of the value.</typeparam>
-    /// <param name = "value">The value from which to instantiate the instance.</param>
+    /// <typeparam name="TValue">The type of the value.</typeparam>
+    /// <param name="value">The value from which to instantiate the instance.</param>
     /// <returns>An instance of this type, initialized from the value.</returns>
     /// <remarks>This will be Scenario.Undefined if the type is not compatible.</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -337,12 +343,13 @@ public readonly partial struct Scenario
 
         return Undefined;
     }
-
+#endif
+#if NET8_0_OR_GREATER
     /// <summary>
     /// Gets an instance of the JSON value from a number value.
     /// </summary>
-    /// <typeparam name = "TValue">The type of the value.</typeparam>
-    /// <param name = "value">The value from which to instantiate the instance.</param>
+    /// <typeparam name="TValue">The type of the value.</typeparam>
+    /// <param name="value">The value from which to instantiate the instance.</param>
     /// <returns>An instance of this type, initialized from the value.</returns>
     /// <remarks>This will be Scenario.Undefined if the type is not compatible.</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -355,12 +362,13 @@ public readonly partial struct Scenario
 
         return Undefined;
     }
-
+#endif
+#if NET8_0_OR_GREATER
     /// <summary>
     /// Gets an instance of the JSON value from an array value.
     /// </summary>
-    /// <typeparam name = "TValue">The type of the value.</typeparam>
-    /// <param name = "value">The value from which to instantiate the instance.</param>
+    /// <typeparam name="TValue">The type of the value.</typeparam>
+    /// <param name="value">The value from which to instantiate the instance.</param>
     /// <returns>An instance of this type, initialized from the value.</returns>
     /// <remarks>This will be Scenario.Undefined if the type is not compatible.</remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -373,7 +381,7 @@ public readonly partial struct Scenario
 
         return Undefined;
     }
-
+#endif
     /// <summary>
     /// Gets an instance of the JSON value from an object value.
     /// </summary>
@@ -465,7 +473,11 @@ public readonly partial struct Scenario
     /// <returns>The parsed value.</returns>
     static Scenario ParseValue(ReadOnlySpan<char> buffer)
     {
+#if NET8_0_OR_GREATER
         return IJsonValue<Scenario>.ParseValue(buffer);
+#else
+        return JsonValueHelpers.ParseValue<Scenario>(buffer);
+#endif
     }
 
     /// <summary>
@@ -475,7 +487,11 @@ public readonly partial struct Scenario
     /// <returns>The parsed value.</returns>
     static Scenario ParseValue(ReadOnlySpan<byte> buffer)
     {
+#if NET8_0_OR_GREATER
         return IJsonValue<Scenario>.ParseValue(buffer);
+#else
+        return JsonValueHelpers.ParseValue<Scenario>(buffer);
+#endif
     }
 
     /// <summary>
@@ -485,7 +501,11 @@ public readonly partial struct Scenario
     /// <returns>The parsed value.</returns>
     static Scenario ParseValue(ref Utf8JsonReader reader)
     {
+#if NET8_0_OR_GREATER
         return IJsonValue<Scenario>.ParseValue(ref reader);
+#else
+        return JsonValueHelpers.ParseValue<Scenario>(ref reader);
+#endif
     }
 
     /// <summary>
@@ -497,6 +517,7 @@ public readonly partial struct Scenario
     public TTarget As<TTarget>()
         where TTarget : struct, IJsonValue<TTarget>
     {
+#if NET8_0_OR_GREATER
         if ((this.backing & Backing.JsonElement) != 0)
         {
             return TTarget.FromJson(this.jsonElementBacking);
@@ -513,6 +534,9 @@ public readonly partial struct Scenario
         }
 
         return TTarget.Undefined;
+#else
+        return this.As<Scenario, TTarget>();
+#endif
     }
 
     /// <inheritdoc/>

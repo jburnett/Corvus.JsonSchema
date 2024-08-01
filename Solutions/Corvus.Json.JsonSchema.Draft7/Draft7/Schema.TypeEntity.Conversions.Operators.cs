@@ -16,7 +16,7 @@ namespace Corvus.Json.JsonSchema.Draft7;
 public readonly partial struct Schema
 {
     /// <summary>
-    /// A type generated from a JsonSchema specification.
+    /// Generated from JSON Schema.
     /// </summary>
     public readonly partial struct TypeEntity
     {
@@ -43,7 +43,7 @@ public readonly partial struct Schema
         /// Conversion from <see cref = "Corvus.Json.JsonSchema.Draft7.Schema.SimpleTypes"/>.
         /// </summary>
         /// <param name = "value">The value from which to convert.</param>
-        public static implicit operator TypeEntity(Corvus.Json.JsonSchema.Draft7.Schema.SimpleTypes value)
+        public static explicit operator TypeEntity(Corvus.Json.JsonSchema.Draft7.Schema.SimpleTypes value)
         {
             if (value.HasJsonElementBacking)
             {
@@ -80,7 +80,7 @@ public readonly partial struct Schema
         /// Conversion from <see cref = "Corvus.Json.JsonSchema.Draft7.Schema.TypeEntity.SimpleTypesArray"/>.
         /// </summary>
         /// <param name = "value">The value from which to convert.</param>
-        public static implicit operator TypeEntity(Corvus.Json.JsonSchema.Draft7.Schema.TypeEntity.SimpleTypesArray value)
+        public static explicit operator TypeEntity(Corvus.Json.JsonSchema.Draft7.Schema.TypeEntity.SimpleTypesArray value)
         {
             if (value.HasJsonElementBacking)
             {

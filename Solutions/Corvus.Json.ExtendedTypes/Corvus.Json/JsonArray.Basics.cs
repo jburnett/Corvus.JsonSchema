@@ -3,6 +3,7 @@
 // </copyright>
 
 using System.Buffers;
+using System.Collections;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -13,7 +14,12 @@ namespace Corvus.Json;
 /// <summary>
 /// Represents a Json array.
 /// </summary>
+#if NET8_0_OR_GREATER
+[CollectionBuilder(typeof(JsonArray), "Create")]
+public readonly partial struct JsonArray : IEnumerable<JsonAny>
+#else
 public readonly partial struct JsonArray
+#endif
 {
     /// <summary>
     /// Gets an empty array.
@@ -98,13 +104,23 @@ public readonly partial struct JsonArray
     }
 
     /// <summary>
+    /// Create an array from the span of items.
+    /// </summary>
+    /// <param name="items">The items from which to create the array.</param>
+    /// <returns>The array containing the items.</returns>
+    public static JsonArray Create(ReadOnlySpan<JsonAny> items)
+    {
+        return new([..items]);
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="JsonAny"/> struct.
     /// </summary>
     /// <param name="value">The value from which to construct the instance.</param>
     /// <returns>A JsonAny instantiated from the given array.</returns>
     public static JsonArray FromItems(params JsonAny[] value)
     {
-        return new(value.ToImmutableList());
+        return new([.. value]);
     }
 
     /// <summary>
@@ -288,6 +304,20 @@ public readonly partial struct JsonArray
 
         return new JsonArray(builder.ToImmutable());
     }
+
+#if NET8_0_OR_GREATER
+    /// <inheritdoc/>
+    IEnumerator<JsonAny> IEnumerable<JsonAny>.GetEnumerator()
+    {
+        return this.EnumerateArray();
+    }
+
+    /// <inheritdoc/>
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return this.EnumerateArray();
+    }
+#endif
 
     /// <inheritdoc/>
     public int GetArrayLength()

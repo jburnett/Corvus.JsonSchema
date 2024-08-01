@@ -4,7 +4,6 @@
 
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace Corvus.Json.CodeGeneration;
@@ -14,8 +13,8 @@ namespace Corvus.Json.CodeGeneration;
 /// </summary>
 internal class JsonSchemaRegistry
 {
-    private static readonly JsonReference DefaultAbsoluteLocation = new("https://endjin.com/");
-    private readonly Dictionary<string, LocatedSchema> locatedSchema = new();
+    private static readonly JsonReference DefaultAbsoluteLocation = new("https://endjin.com");
+    private readonly Dictionary<string, LocatedSchema> locatedSchema = [];
     private readonly IDocumentResolver documentResolver;
 
     /// <summary>
@@ -40,9 +39,9 @@ internal class JsonSchemaRegistry
     /// <param name="jsonSchemaPath">The path to the JSON schema root document.</param>
     /// <param name="rebaseAsRoot">Whether to rebase this path as a root document. This should only be done for a JSON schema island in a larger non-schema document.
     /// If <see langoword="true"/>, then references in this document should be taken as if the fragment was the root of a document.</param>
-    /// <returns>A <see cref="Task"/> which, when complete, provides the base URI for the document.</returns>
+    /// <returns>A <see cref="ValueTask"/> which, when complete, provides the root scope for the document (which may be a generated $ref for a path with a fragment), and the base reference to the document containing the root element.</returns>
     /// <remarks><paramref name="jsonSchemaPath"/> must point to a root scope. If it has a pointer into the document, then <paramref name="rebaseAsRoot"/> must be true.</remarks>
-    public async Task<JsonReference> RegisterDocumentSchema(JsonReference jsonSchemaPath, bool rebaseAsRoot = false)
+    public async ValueTask<(JsonReference RootUri, JsonReference BaseReference)> RegisterDocumentSchema(JsonReference jsonSchemaPath, bool rebaseAsRoot = false)
     {
         if (SchemaReferenceNormalization.TryNormalizeSchemaReference(jsonSchemaPath, out string? result))
         {
@@ -53,11 +52,7 @@ internal class JsonSchemaRegistry
 
         if (basePath.Uri.StartsWith(DefaultAbsoluteLocation.Uri))
         {
-            // This code assumes the OS is not Windows and the default uri ends in a slash.
-            System.Diagnostics.Trace.Assert( !System.OperatingSystem.IsWindows() );
-            System.Diagnostics.Trace.Assert(DefaultAbsoluteLocation.Uri[DefaultAbsoluteLocation.Uri.Length - 1] == '/');
-            // keep the final slash as first char in the basePath for nix-like systems
-            basePath = new JsonReference(jsonSchemaPath.Uri[(DefaultAbsoluteLocation.Uri.Length - 1)..], ReadOnlySpan<char>.Empty);
+            basePath = new JsonReference(jsonSchemaPath.Uri[DefaultAbsoluteLocation.Uri.Length..], []);
         }
 
         JsonElement? optionalDocumentRoot = await this.documentResolver.TryResolve(basePath).ConfigureAwait(false) ?? throw new InvalidOperationException($"Unable to locate the root document at '{basePath}'");
@@ -72,7 +67,8 @@ internal class JsonSchemaRegistry
                 jsonSchemaPath = DefaultAbsoluteLocation.Apply(new JsonReference($"{Guid.NewGuid()}/Schema"));
 
                 // And add the document back to the document resolver against that root URI
-                return await AddSchemaForUpdatedPathAndElement(jsonSchemaPath, newBase).ConfigureAwait(false);
+                JsonReference docref = await AddSchemaForUpdatedPathAndElement(jsonSchemaPath, newBase).ConfigureAwait(false);
+                return (docref, basePath);
             }
             else
             {
@@ -81,7 +77,8 @@ internal class JsonSchemaRegistry
                 // It allows us to indirect through this reference as if it were a "root" type.
                 var referenceSchema = JsonObject.FromProperties(("$ref", (string)jsonSchemaPath));
                 jsonSchemaPath = DefaultAbsoluteLocation.Apply(new JsonReference($"{Guid.NewGuid()}/Schema"));
-                return await AddSchemaForUpdatedPathAndElement(jsonSchemaPath, referenceSchema.AsJsonElement).ConfigureAwait(false);
+                JsonReference docref = await AddSchemaForUpdatedPathAndElement(jsonSchemaPath, referenceSchema.AsJsonElement).ConfigureAwait(false);
+                return (docref, basePath);
             }
         }
 
@@ -105,9 +102,9 @@ internal class JsonSchemaRegistry
             }
         }
 
-        return this.AddSchemaAndSubschema(basePath, baseSchema);
+        return (this.AddSchemaAndSubschema(basePath, baseSchema), basePath);
 
-        async Task<JsonReference> AddSchemaForUpdatedPathAndElement(JsonReference jsonSchemaPath, JsonElement newBase)
+        async ValueTask<JsonReference> AddSchemaForUpdatedPathAndElement(JsonReference jsonSchemaPath, JsonElement newBase)
         {
             this.documentResolver.AddDocument(jsonSchemaPath, GetDocumentFrom(newBase));
             JsonElement? resolvedBase = await this.documentResolver.TryResolve(jsonSchemaPath).ConfigureAwait(false) ?? throw new InvalidOperationException($"Expected to find a rebased schema at {jsonSchemaPath}");
@@ -259,7 +256,11 @@ internal class JsonSchemaRegistry
                     AddSubschemasForSchemaIfValueIsASchemaLikeKindProperty(keyword.Name, value, currentLocation);
                     break;
                 default:
+#if NET8_0_OR_GREATER
                     throw new InvalidOperationException($"Unrecognized property ref resolvable property kind: {Enum.GetName(keyword.RefResolvablePropertyKind)}");
+#else
+                    throw new InvalidOperationException($"Unrecognized property ref resolvable property kind: {Enum.GetName(typeof(RefResolvablePropertyKind), keyword.RefResolvablePropertyKind)}");
+#endif
             }
         }
 

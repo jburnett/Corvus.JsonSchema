@@ -61,6 +61,12 @@ public readonly struct JsonPropertyName
     public static implicit operator JsonPropertyName(string value) => new(value);
 
     /// <summary>
+    /// Conversion to string.
+    /// </summary>
+    /// <param name="value">The string value from which to convert.</param>
+    public static explicit operator string(JsonPropertyName value) => value.GetString();
+
+    /// <summary>
     /// Equals operator.
     /// </summary>
     /// <param name="left">The lhs.</param>
@@ -140,7 +146,11 @@ public readonly struct JsonPropertyName
             return new(value.AsJsonElement);
         }
 
+#if NET8_0_OR_GREATER
         return new((string)value);
+#else
+        return new((string)value.AsString);
+#endif
     }
 
     /// <summary>
@@ -151,6 +161,8 @@ public readonly struct JsonPropertyName
     public static JsonPropertyName ParseValue(ReadOnlySpan<char> buffer)
     {
         int maxByteCount = Encoding.UTF8.GetMaxByteCount(buffer.Length);
+
+#if NET8_0_OR_GREATER
         byte[]? pooledBytes = null;
 
         Span<byte> utf8Buffer = maxByteCount <= JsonConstants.StackallocThreshold ?
@@ -170,6 +182,23 @@ public readonly struct JsonPropertyName
                 ArrayPool<byte>.Shared.Return(pooledBytes, true);
             }
         }
+#else
+        byte[] utf8Buffer = ArrayPool<byte>.Shared.Rent(maxByteCount);
+        char[] sourceBuffer = ArrayPool<char>.Shared.Rent(buffer.Length);
+
+        buffer.CopyTo(sourceBuffer);
+        try
+        {
+            int written = Encoding.UTF8.GetBytes(sourceBuffer, 0, buffer.Length, utf8Buffer, 0);
+            Utf8JsonReader reader = new(utf8Buffer.AsSpan(0, written));
+            return ParseValue(ref reader);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(utf8Buffer, true);
+            ArrayPool<char>.Shared.Return(sourceBuffer, true);
+        }
+#endif
     }
 
     /// <summary>
@@ -310,7 +339,11 @@ public readonly struct JsonPropertyName
     {
         if (other.HasStringBacking)
         {
+#if NET8_0_OR_GREATER
             return this.EqualsString(other.stringBacking);
+#else
+            return this.EqualsString(other.stringBacking.AsSpan());
+#endif
         }
 
         if (other.HasJsonElementBacking)
@@ -406,7 +439,11 @@ public readonly struct JsonPropertyName
 
         if (this.HasStringBacking)
         {
+#if NET8_0_OR_GREATER
             return name.Equals(this.stringBacking, StringComparison.Ordinal);
+#else
+            return name.Equals(this.stringBacking.AsSpan(), StringComparison.Ordinal);
+#endif
         }
 
         throw new InvalidOperationException("Unsupported JSON property name");
@@ -426,7 +463,11 @@ public readonly struct JsonPropertyName
             return this.EqualsJsonElement(name.AsJsonElement);
         }
 
+#if NET8_0_OR_GREATER
         return this.EqualsString((string)name);
+#else
+        return this.EqualsString(((string)name).AsSpan());
+#endif
     }
 
     /// <summary>
@@ -444,8 +485,8 @@ public readonly struct JsonPropertyName
 
         if (this.HasStringBacking)
         {
+#if NET8_0_OR_GREATER
             ReadOnlySpan<char> value = this.stringBacking.AsSpan();
-
             byte[]? bytes = null;
             try
             {
@@ -463,6 +504,19 @@ public readonly struct JsonPropertyName
                     ArrayPool<byte>.Shared.Return(b);
                 }
             }
+#else
+            int length = Encoding.UTF8.GetMaxByteCount(this.stringBacking.Length);
+            byte[] bytes = ArrayPool<byte>.Shared.Rent(length);
+            try
+            {
+                int written = Encoding.UTF8.GetBytes(this.stringBacking, 0, this.stringBacking.Length, bytes, 0);
+                return name.SequenceEqual(bytes.AsSpan(0, written));
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(bytes);
+            }
+#endif
         }
 
         throw new InvalidOperationException("Unsupported JSON property name");
@@ -473,6 +527,7 @@ public readonly struct JsonPropertyName
     {
         if (this.HasJsonElementBacking)
         {
+#if NET8_0_OR_GREATER
             const int state = default;
             if (this.jsonElementBacking.TryGetValue(GetHashCodeParser, state, out int result))
             {
@@ -480,6 +535,9 @@ public readonly struct JsonPropertyName
             }
 
             throw new InvalidOperationException();
+#else
+            return this.jsonElementBacking.GetString().GetHashCode();
+#endif
         }
 
         if (this.HasStringBacking)
@@ -489,16 +547,23 @@ public readonly struct JsonPropertyName
 
         throw new InvalidOperationException("Unsupported JSON property name");
 
+#if NET8_0_OR_GREATER
         static bool GetHashCodeParser(ReadOnlySpan<char> name, in int state, out int result)
         {
             result = string.GetHashCode(name);
             return true;
         }
+#endif
     }
 
     /// <inheritdoc/>
     public override string? ToString()
     {
+        if (this.TryGetString(out string? value))
+        {
+            return value;
+        }
+
         return base.ToString();
     }
 
@@ -663,12 +728,22 @@ public readonly struct JsonPropertyName
     public T As<T>()
         where T : struct, IJsonString<T>
     {
+#if NET8_0_OR_GREATER
         if (this.HasJsonElementBacking)
         {
             return T.FromJson(this.jsonElementBacking);
         }
 
         return T.FromString(new JsonString(this.stringBacking));
+#else
+        if (this.HasJsonElementBacking)
+        {
+            return JsonValueNetStandard20Extensions.FromJsonElement<T>(this.jsonElementBacking);
+        }
+
+        return new JsonString(this.stringBacking).As<T>();
+
+#endif
     }
 
     /// <summary>
@@ -743,7 +818,11 @@ public readonly struct JsonPropertyName
                 return false;
             }
 
+#if NET8_0_OR_GREATER
             this.stringBacking.CopyTo(memory.Span);
+#else
+            this.stringBacking.AsSpan().CopyTo(memory.Span);
+#endif
             return true;
         }
 

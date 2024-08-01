@@ -18,7 +18,7 @@ namespace Corvus.Json.JsonSchema.Draft201909;
 public readonly partial struct Core
 {
     /// <summary>
-    /// A type generated from a JsonSchema specification.
+    /// Generated from JSON Schema.
     /// </summary>
     public readonly partial struct RecursiveAnchorEntity : IJsonBoolean<RecursiveAnchorEntity>
     {
@@ -61,7 +61,7 @@ public readonly partial struct Core
         /// </summary>
         /// <param name = "value">The value from which to convert.</param>
         /// <exception cref = "InvalidOperationException">The value was not a string.</exception>
-        public static explicit operator bool (RecursiveAnchorEntity value)
+        public static implicit operator bool (RecursiveAnchorEntity value)
         {
             return value.GetBoolean() ?? throw new InvalidOperationException();
         }

@@ -14,8 +14,13 @@ namespace Corvus.Json.Patch.Model;
 public readonly partial struct JsonPatchDocument
 {
     /// <summary>
-    /// A type generated from a JsonSchema specification.
+    /// Generated from JSON Schema.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Copy operation. "from" is a JSON Pointer.
+    /// </para>
+    /// </remarks>
     public readonly partial struct Copy
     {
         /// <inheritdoc/>
@@ -30,7 +35,7 @@ public readonly partial struct JsonPatchDocument
             if (level > ValidationLevel.Basic)
             {
                 result = result.UsingStack();
-                result = result.PushSchemaLocation("D:/source/corvus-dotnet/Corvus.JsonSchema/Solutions/Corvus.Json.Patch/Corvus.Json.Patch/Model/json-patch.json#/$defs/Copy");
+                result = result.PushSchemaLocation("json-patch.json#/$defs/Copy");
             }
 
             JsonValueKind valueKind = this.ValueKind;

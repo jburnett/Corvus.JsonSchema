@@ -14,15 +14,26 @@ namespace Corvus.Json.JsonSchema.Draft7;
 public readonly partial struct Schema
 {
     /// <summary>
-    /// A type generated from a JsonSchema specification.
+    /// Generated from JSON Schema.
     /// </summary>
     public readonly partial struct StringArray
     {
         /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public StringArray Remove(in JsonAny item1)
+        StringArray IJsonArray<StringArray>.Remove(in JsonAny item1)
         {
             return new(this.GetImmutableListWithout(item1));
+        }
+
+        /// <summary>
+        /// Remove the specified item from the array.
+        /// </summary>
+        /// <param name = "item">The item to remove.</param>
+        /// <returns>An instance of the array with the item removed.</returns>
+        /// <exception cref = "InvalidOperationException">The value was not an array.</exception>
+        public StringArray Remove(in Corvus.Json.JsonString item)
+        {
+            return new(this.GetImmutableListWithout(item.AsAny));
         }
 
         /// <inheritdoc/>
